@@ -23,49 +23,48 @@ from datetime import datetime
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="BDI — Optimizador de Carteras",
-    page_icon="📊",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # ─────────────────────────────────────────────
-#  PALETA CORPORATIVA BDI
+#  PALETA CORPORATIVA BDI (oficial)
 # ─────────────────────────────────────────────
-BDI_DARK      = '#0a1628'
-BDI_NAVY      = '#1a3a5c'
-BDI_BLUE      = '#1565c0'
-BDI_LIGHTBLUE = '#90caf9'
-BDI_GOLD      = '#f0c040'
-BDI_GOLD2     = '#ffa000'
-BDI_RED       = '#e53935'
-BDI_GREEN     = '#43a047'
-BDI_TEAL      = '#00897b'
-BDI_PURPLE    = '#8e24aa'
-BDI_GREY      = '#37474f'
-BDI_LIGHTGREY = '#b0bec5'
+BDI_GREEN    = '#137247'   # Verde principal BDI
+BDI_CHARCOAL = '#323232'   # Fondo oscuro
+BDI_CREAM    = '#EFEDEA'   # Texto claro
+BDI_TEAL     = '#17BEBB'   # Turquesa
+BDI_LIME     = '#B5E61D'   # Lima / acento
+
+BDI_DARK_BG  = '#1c1c1c'
+BDI_CARD_BG  = '#282828'
+BDI_BORDER   = '#404040'
+BDI_GREEN_DK = '#0d4d2e'
+BDI_MUTED    = '#9e9e9e'
 
 PALETTE = [
-    BDI_GOLD, BDI_LIGHTBLUE, BDI_GREEN, BDI_RED,
-    BDI_TEAL, BDI_PURPLE, BDI_GOLD2, '#ef5350',
-    '#26c6da', '#d4e157', '#ff7043', '#ab47bc',
+    BDI_TEAL, BDI_LIME, '#ffa726', '#ef5350',
+    '#ab47bc', '#42a5f5', '#26a69a', '#d4e157',
+    '#ff7043', '#7e57c2', '#26c6da', '#66bb6a',
 ]
 
-PORT_COLORS = [BDI_GOLD, BDI_RED, BDI_TEAL, BDI_GREEN]
+PORT_COLORS = [BDI_GREEN, BDI_TEAL, BDI_LIME, '#ffa726']
 
 plt.rcParams.update({
-    'figure.facecolor': BDI_DARK,
-    'axes.facecolor':   '#0d1f35',
-    'axes.edgecolor':   '#2a4a6b',
-    'axes.labelcolor':  BDI_LIGHTGREY,
-    'axes.titlecolor':  'white',
-    'xtick.color':      BDI_LIGHTGREY,
-    'ytick.color':      BDI_LIGHTGREY,
-    'text.color':       'white',
-    'grid.color':       '#1e3a50',
-    'grid.linewidth':   0.6,
-    'legend.facecolor': '#0d1f35',
-    'legend.edgecolor': '#2a4a6b',
-    'legend.labelcolor':'white',
+    'figure.facecolor': BDI_DARK_BG,
+    'axes.facecolor':   '#232323',
+    'axes.edgecolor':   BDI_BORDER,
+    'axes.labelcolor':  BDI_CREAM,
+    'axes.titlecolor':  BDI_CREAM,
+    'xtick.color':      BDI_MUTED,
+    'ytick.color':      BDI_MUTED,
+    'text.color':       BDI_CREAM,
+    'grid.color':       '#383838',
+    'grid.linewidth':   0.5,
+    'legend.facecolor': '#282828',
+    'legend.edgecolor': BDI_BORDER,
+    'legend.labelcolor': BDI_CREAM,
     'font.family':      'DejaVu Sans',
 })
 
@@ -75,53 +74,55 @@ plt.rcParams.update({
 st.markdown("""
 <style>
     /* Fondo general */
-    .stApp { background-color: #0a1628; color: #ffffff; }
+    .stApp { background-color: #1c1c1c; color: #EFEDEA; }
 
     /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #0d1f35;
-        border-right: 1px solid #2a4a6b;
+        background-color: #232323;
+        border-right: 1px solid #404040;
     }
 
     /* Títulos */
-    h1, h2, h3 { color: #f0c040 !important; }
+    h1, h2, h3 { color: #B5E61D !important; }
 
     /* Metric cards */
     [data-testid="stMetric"] {
-        background-color: #0d1f35;
-        border: 1px solid #2a4a6b;
+        background-color: #282828;
+        border: 1px solid #404040;
         border-radius: 8px;
         padding: 10px 14px;
     }
     [data-testid="stMetricValue"] {
-        color: #f0c040 !important;
-        font-size: 1.3rem !important;
+        color: #B5E61D !important;
+        font-size: 1.4rem !important;
+        font-weight: 700 !important;
     }
-    [data-testid="stMetricLabel"] { color: #90caf9 !important; }
+    [data-testid="stMetricLabel"] { color: #17BEBB !important; font-size: 0.85rem !important; }
 
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #0d1f35;
-        border-bottom: 2px solid #2a4a6b;
+        background-color: #232323;
+        border-bottom: 2px solid #137247;
         gap: 4px;
     }
     .stTabs [data-baseweb="tab"] {
-        color: #90caf9;
+        color: #EFEDEA;
         background-color: transparent;
         border-radius: 6px 6px 0 0;
         padding: 8px 16px;
+        font-size: 0.9rem;
     }
     .stTabs [aria-selected="true"] {
-        color: #f0c040 !important;
-        border-bottom: 2px solid #f0c040 !important;
-        background-color: #112038 !important;
+        color: #B5E61D !important;
+        border-bottom: 2px solid #B5E61D !important;
+        background-color: #2a2a2a !important;
     }
 
     /* Botón principal */
     .stButton > button {
-        background: linear-gradient(135deg, #1565c0, #0a47a0);
-        color: white;
-        border: 1px solid #90caf9;
+        background: linear-gradient(135deg, #137247, #0d4d2e);
+        color: #EFEDEA;
+        border: 1px solid #17BEBB;
         border-radius: 8px;
         padding: 0.65rem 2rem;
         font-weight: bold;
@@ -131,39 +132,39 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #f0c040, #ffa000);
-        color: #0a1628 !important;
-        border-color: #f0c040;
+        background: linear-gradient(135deg, #B5E61D, #8aaa14);
+        color: #1c1c1c !important;
+        border-color: #B5E61D;
     }
 
     /* Inputs */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stTextArea > div > div > textarea {
-        background-color: #0d1f35 !important;
-        color: white !important;
-        border: 1px solid #2a4a6b !important;
+        background-color: #282828 !important;
+        color: #EFEDEA !important;
+        border: 1px solid #404040 !important;
         border-radius: 6px !important;
     }
 
     /* Slider */
-    [data-testid="stSlider"] > div { color: #90caf9; }
+    [data-testid="stSlider"] > div { color: #EFEDEA; }
 
     /* Checkbox */
-    [data-testid="stCheckbox"] { color: #b0bec5; }
+    [data-testid="stCheckbox"] { color: #EFEDEA; }
 
     /* Dataframe */
-    .stDataFrame { border: 1px solid #2a4a6b; border-radius: 8px; }
+    .stDataFrame { border: 1px solid #404040; border-radius: 8px; }
 
     /* Divisor */
-    hr { border-color: #2a4a6b; }
+    hr { border-color: #404040; }
 
     /* Banner header */
     .bdi-header {
-        background: linear-gradient(135deg, #0d1f35 0%, #1a3a5c 60%, #0d1f35 100%);
-        border: 1px solid #2a4a6b;
+        background: linear-gradient(135deg, #0d4d2e 0%, #137247 50%, #0e4a5a 100%);
+        border: 1px solid #17BEBB;
         border-radius: 14px;
-        padding: 1.8rem 2rem;
+        padding: 2rem 2.4rem;
         margin-bottom: 1.5rem;
         text-align: center;
     }
@@ -175,14 +176,70 @@ st.markdown("""
         margin: 0.7rem 0 0.3rem 0;
     }
 
+    /* Info box para explicaciones */
+    .info-box {
+        background-color: #1e2e22;
+        border-left: 4px solid #137247;
+        border-radius: 0 8px 8px 0;
+        padding: 1rem 1.4rem;
+        margin-bottom: 1.2rem;
+        color: #EFEDEA;
+        font-size: 0.92rem;
+        line-height: 1.7;
+    }
+
+    /* Instructivo pasos */
+    .step-box {
+        background-color: #252525;
+        border: 1px solid #404040;
+        border-radius: 10px;
+        padding: 1.2rem 1.6rem;
+        margin: 0.5rem 0;
+        color: #EFEDEA;
+        font-size: 0.93rem;
+        line-height: 1.6;
+    }
+    .step-num {
+        display: inline-block;
+        background: #137247;
+        color: #EFEDEA;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        text-align: center;
+        line-height: 28px;
+        font-weight: bold;
+        margin-right: 10px;
+        font-size: 0.95rem;
+    }
+
+    /* Ideas box */
+    .ideas-box {
+        background: linear-gradient(135deg, #0d2e1e, #1a3a2e);
+        border: 1px solid #137247;
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
+        margin-top: 2rem;
+        color: #EFEDEA;
+    }
+    .idea-item {
+        background: #232323;
+        border-left: 4px solid #17BEBB;
+        border-radius: 0 8px 8px 0;
+        padding: 0.9rem 1.3rem;
+        margin: 0.8rem 0;
+        font-size: 0.92rem;
+        line-height: 1.6;
+    }
+
     /* Advertencia legal */
     .legal-warning {
-        background-color: #121208;
+        background-color: #1e1a00;
         border: 1px solid #ffa000;
         border-radius: 8px;
         padding: 1rem 1.4rem;
         margin-top: 2rem;
-        color: #b0bec5;
+        color: #EFEDEA;
         font-size: 0.84rem;
         line-height: 1.6;
     }
@@ -198,10 +255,10 @@ def pct(x):
 def add_bdi_watermark(fig):
     fig.text(0.99, 0.01, 'BDI Consultora de Inversiones',
              ha='right', va='bottom', fontsize=7,
-             color=BDI_LIGHTBLUE, alpha=0.5, style='italic')
+             color=BDI_TEAL, alpha=0.5, style='italic')
     fig.text(0.01, 0.01, datetime.now().strftime('%d/%m/%Y'),
              ha='left', va='bottom', fontsize=7,
-             color=BDI_LIGHTGREY, alpha=0.5)
+             color=BDI_MUTED, alpha=0.5)
 
 def port_stats(w, mean_ret, cov_mat, rf):
     ret    = np.dot(w, mean_ret)
@@ -233,14 +290,14 @@ def calc_cagr(cum_series):
 # ─────────────────────────────────────────────
 st.markdown("""
 <div class="bdi-header">
-    <h1 style="color:#f0c040; margin:0; font-size:2.3rem; letter-spacing:2px;">
-        ⚡ BDI — OPTIMIZADOR DE CARTERAS
+    <h1 style="color:#EFEDEA; margin:0; font-size:2.4rem; letter-spacing:3px; font-weight:800;">
+        ⚡ BDI — OPTIMIZADOR DE CARTERAS v2.0
     </h1>
-    <p style="color:#90caf9; margin:0.4rem 0 0 0; font-size:1.05rem; font-weight:500;">
-        Modelo de Markowitz con Frontera Eficiente &nbsp;·&nbsp; v2.0
+    <p style="color:#B5E61D; margin:0.5rem 0 0.2rem 0; font-size:1.05rem; font-weight:600; letter-spacing:1px;">
+        Modelo de Markowitz con Frontera Eficiente
     </p>
-    <p style="color:#b0bec5; margin:0.2rem 0 0 0; font-size:0.85rem;">
-        BDI Consultora de Inversiones
+    <p style="color:#EFEDEA; margin:0; font-size:0.9rem; opacity:0.85;">
+        BDI Consultora de Inversiones — Mariano Ricciardi
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -251,8 +308,8 @@ st.markdown("""
 with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding:0.8rem 0 0.4rem 0;">
-        <h2 style="color:#f0c040; font-size:1.25rem; margin:0;">⚙️ Configuración</h2>
-        <p style="color:#90caf9; font-size:0.82rem; margin:0.2rem 0 0 0;">Parámetros de optimización</p>
+        <h2 style="color:#B5E61D; font-size:1.2rem; margin:0;">⚙️ Configuración</h2>
+        <p style="color:#17BEBB; font-size:0.82rem; margin:0.2rem 0 0 0;">Parámetros de optimización</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -263,7 +320,7 @@ with st.sidebar:
         "Tickers separados por coma",
         value="JPM, AAPL, MSFT, GOOGL, MELI",
         height=85,
-        help="Ejemplos: JPM, AAPL, MSFT, MELI, GOOGL, GGAL.BA, SPY, GLD",
+        help="Usá el mismo formato de ticker que figura en Yahoo Finance. Ej: JPM, AAPL, MSFT, MELI, GOOGL, SPY, GLD, XOM",
     )
 
     st.markdown("---")
@@ -305,25 +362,67 @@ with st.sidebar:
     run_button = st.button("🚀  EJECUTAR ANÁLISIS", type="primary")
 
 # ─────────────────────────────────────────────
-#  ESTADO INICIAL (pantalla de bienvenida)
+#  ESTADO INICIAL (pantalla de bienvenida + instructivo)
 # ─────────────────────────────────────────────
 if not run_button and 'results_ready' not in st.session_state:
-    st.markdown("""
-    <div style="text-align:center; padding:4rem 2rem; color:#b0bec5;">
-        <p style="font-size:4.5rem; margin:0;">📊</p>
-        <h3 style="color:#90caf9; margin:1rem 0 0.5rem 0;">Listo para optimizar</h3>
-        <p style="font-size:1rem; margin:0;">
-            Configurá los parámetros en el panel izquierdo<br/>
-            y presioná <strong style="color:#f0c040;">🚀 EJECUTAR ANÁLISIS</strong>
-        </p>
-        <br/>
-        <p style="font-size:0.85rem; color:#4a6a8a;">
-            Ejemplos de tickers: JPM &nbsp;·&nbsp; AAPL &nbsp;·&nbsp; MSFT &nbsp;·&nbsp;
-            GOOGL &nbsp;·&nbsp; MELI &nbsp;·&nbsp; GGAL.BA &nbsp;·&nbsp;
-            XOM &nbsp;·&nbsp; GLD &nbsp;·&nbsp; SPY &nbsp;·&nbsp; BRK-B
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+
+    col_left, col_right = st.columns([1, 1], gap="large")
+
+    with col_left:
+        st.markdown("""
+        <div style="text-align:center; padding:2rem 1rem 1rem 1rem;">
+            <p style="font-size:4rem; margin:0;">📊</p>
+            <h3 style="color:#17BEBB; margin:1rem 0 0.5rem 0; font-size:1.5rem;">
+                Listo para optimizar tu cartera
+            </h3>
+            <p style="font-size:1rem; margin:0; color:#EFEDEA; line-height:1.7;">
+                Ingresá los activos, configurá los parámetros<br/>
+                y presioná <strong style="color:#B5E61D;">🚀 EJECUTAR ANÁLISIS</strong><br/>
+                para obtener tu portafolio óptimo.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class="info-box" style="margin-top:1.5rem;">
+            <strong style="color:#B5E61D;">📌 Tickers de ejemplo (formato Yahoo Finance):</strong><br/><br/>
+            <strong style="color:#17BEBB;">Acciones USA:</strong>
+            JPM &nbsp;·&nbsp; AAPL &nbsp;·&nbsp; MSFT &nbsp;·&nbsp; GOOGL &nbsp;·&nbsp; AMZN &nbsp;·&nbsp; NVDA &nbsp;·&nbsp; XOM<br/>
+            <strong style="color:#17BEBB;">ETFs:</strong>
+            SPY &nbsp;·&nbsp; QQQ &nbsp;·&nbsp; IWM &nbsp;·&nbsp; GLD &nbsp;·&nbsp; TLT<br/>
+            <strong style="color:#17BEBB;">Latinoamérica:</strong>
+            MELI &nbsp;·&nbsp; NU &nbsp;·&nbsp; PBR<br/><br/>
+            <span style="color:#9e9e9e; font-size:0.85rem;">
+                ⚠️ Ingresá los tickers exactamente como aparecen en
+                <strong>Yahoo Finance</strong> para asegurar la descarga de datos.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_right:
+        st.markdown("""
+        <h3 style="color:#B5E61D; margin-top:1.5rem; font-size:1.2rem;">
+            📋 ¿Cómo usar el optimizador?
+        </h3>
+        """, unsafe_allow_html=True)
+
+        pasos = [
+            ("1", "Ingresá los tickers", "En el panel izquierdo, escribí los símbolos de los activos separados por coma (ej: <strong>AAPL, MSFT, JPM</strong>). Usá el formato de Yahoo Finance."),
+            ("2", "Elegí el período", "Seleccioná cuántos años de historia histórica querés analizar (1 a 15 años). Más años = mayor robustez estadística."),
+            ("3", "Configurá parámetros", "Ajustá la tasa libre de riesgo (referencia: tasa de la Fed o bono del Tesoro) y las restricciones de peso por activo."),
+            ("4", "Ejecutá el análisis", "Presioná <strong style='color:#B5E61D;'>🚀 EJECUTAR ANÁLISIS</strong>. Se calcularán los portafolios óptimos por Sharpe, mínima volatilidad, equiponderado y —�pcionalmente— retorno objetivo."),
+            ("5", "Explorá los resultados", "Navegá las pestañas: Espacio de Markowitz, Composición, Rendimiento, Métricas, Correlación y CAGR."),
+        ]
+
+        for num, titulo, desc in pasos:
+            st.markdown(f"""
+            <div class="step-box">
+                <span class="step-num">{num}</span>
+                <strong style="color:#17BEBB;">{titulo}</strong><br/>
+                <span style="margin-left:38px; display:block; margin-top:4px;">{desc}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
     st.stop()
 
 # ─────────────────────────────────────────────
@@ -477,7 +576,7 @@ if run_button:
     for i, (name, m) in enumerate(metricas.items()):
         color = PORT_COLORS[i % len(PORT_COLORS)]
         st.markdown(
-            f'<div class="port-card" style="border-left:4px solid {color}; background:#0d1f35;">'
+            f'<div class="port-card" style="border-left:4px solid {color}; background:#282828;">'
             f'<strong style="color:{color}; font-size:1.05rem;">📁 {name}</strong></div>',
             unsafe_allow_html=True,
         )
@@ -508,50 +607,91 @@ if run_button:
 
     # ── Tab 1 — Espacio de Markowitz ──────────────────────────────────
     with tab1:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">🌐 ¿Qué es el Espacio de Markowitz?</strong><br/>
+            Este gráfico muestra el universo de todos los portafolios posibles formados con los activos seleccionados.
+            Cada punto representa una combinación de pesos distinta. El color indica el <strong>Sharpe Ratio</strong>
+            (relación retorno/riesgo). La <strong>Curva de Frontera Eficiente</strong> delimita los portafolios que
+            maximizan el retorno para cada nivel de riesgo. La <strong>Línea de Mercado de Capitales (CML)</strong>
+            parte de la tasa libre de riesgo y toca la frontera en el punto de máximo Sharpe.
+        </div>
+        """, unsafe_allow_html=True)
+
         fig, ax = plt.subplots(figsize=(13, 8))
+
+        # Nube de portafolios simulados
         sc = ax.scatter(sim_vol_arr * 100, sim_ret_arr * 100,
                         c=sim_sharpe_arr, cmap='plasma',
-                        alpha=0.35, s=4, zorder=1)
+                        alpha=0.30, s=5, zorder=1)
         cb = fig.colorbar(sc, ax=ax, pad=0.02)
-        cb.set_label('Sharpe Ratio', color='white', fontsize=11)
-        cb.ax.yaxis.set_tick_params(color='white')
-        plt.setp(cb.ax.yaxis.get_ticklabels(), color='white')
+        cb.set_label('Sharpe Ratio', color=BDI_CREAM, fontsize=12)
+        cb.ax.yaxis.set_tick_params(color=BDI_CREAM, labelsize=10)
+        plt.setp(cb.ax.yaxis.get_ticklabels(), color=BDI_CREAM)
 
+        # Frontera eficiente — línea gruesa y destacada
         valid = ~np.isnan(vol_fe)
         ax.plot(vol_fe[valid] * 100, ret_range[valid] * 100,
-                color=BDI_LIGHTBLUE, linewidth=3, zorder=5, label='Frontera Eficiente')
+                color=BDI_TEAL, linewidth=4.5, zorder=6,
+                label='Frontera Eficiente', solid_capstyle='round')
 
-        vol_cml  = np.linspace(0, np.nanmax(vol_fe) * 130, 100)
-        cml_line = rf * 100 + sharpe_val * vol_cml
-        ax.plot(vol_cml, cml_line, '--', color=BDI_GOLD, linewidth=1.8,
-                alpha=0.8, zorder=4, label='CML (Línea de Mercado de Capitales)')
+        # CML — solo en rango relevante (cerca de los datos)
+        vol_cml_range = np.linspace(vol_min * 0.7, vol_sharpe * 1.3, 80)
+        cml_line = rf * 100 + sharpe_val * vol_cml_range * 100
+        ax.plot(vol_cml_range * 100, cml_line, '--', color=BDI_LIME, linewidth=2,
+                alpha=0.9, zorder=4, label='CML (Línea de Mercado de Capitales)')
 
-        ax.scatter(vol_sharpe * 100, ret_sharpe * 100,
-                   marker='*', s=450, color=BDI_GOLD, zorder=10,
-                   edgecolors='white', linewidth=0.8,
-                   label=f'Máx. Sharpe  ({sharpe_val:.2f})')
-        ax.scatter(vol_min * 100, ret_vol * 100,
-                   marker='D', s=160, color=BDI_RED, zorder=10,
-                   edgecolors='white', linewidth=0.8, label='Mín. Volatilidad')
-        ax.scatter(vol_eq * 100, ret_eq * 100,
-                   marker='s', s=120, color=BDI_TEAL, zorder=10,
-                   edgecolors='white', linewidth=0.8, label='Equiponderado')
+        # Marcadores de portfolios — más grandes y con anotaciones
+        portfolios_plot = [
+            (vol_sharpe, ret_sharpe, '*',  500, BDI_LIME,    f'Máx. Sharpe\n({sharpe_val:.2f})'),
+            (vol_min,    ret_vol,    'D',  200, '#ef5350',   f'Mín. Vol.\n({pct(vol_min)})'),
+            (vol_eq,     ret_eq,     's',  200, BDI_TEAL,    f'Equip.\n({pct(ret_eq)})'),
+        ]
         if w_obj_arr is not None:
-            ax.scatter(vol_obj * 100, ret_obj_real * 100,
-                       marker='P', s=200, color=BDI_GREEN, zorder=10,
-                       edgecolors='white', linewidth=0.8,
-                       label=f'Retorno Obj. ({pct(ret_obj)})')
+            portfolios_plot.append(
+                (vol_obj, ret_obj_real, 'P', 220, '#ffa726', f'Obj. {pct(ret_obj)}\n({pct(ret_obj_real)})')
+            )
 
-        ax.axhline(rf * 100, color=BDI_LIGHTGREY, linewidth=0.8,
+        # Calcular offsets para anotaciones automáticas
+        x_range = (sim_vol_arr.max() - sim_vol_arr.min()) * 100
+        y_range = (sim_ret_arr.max() - sim_ret_arr.min()) * 100
+
+        for i, (vol_p, ret_p, marker, sz, color, label) in enumerate(portfolios_plot):
+            ax.scatter(vol_p * 100, ret_p * 100,
+                       marker=marker, s=sz, color=color, zorder=10,
+                       edgecolors='white', linewidth=1.2)
+            # Anotación con flecha
+            x_off = x_range * 0.05 * (1 if i % 2 == 0 else -1)
+            y_off = y_range * 0.06 * (1 if i < 2 else -1)
+            ax.annotate(
+                label,
+                xy=(vol_p * 100, ret_p * 100),
+                xytext=(vol_p * 100 + x_off, ret_p * 100 + y_off),
+                fontsize=10, fontweight='bold', color=color,
+                ha='center', va='center',
+                bbox=dict(boxstyle='round,pad=0.3', fc='#282828', ec=color, alpha=0.85, lw=1.2),
+                arrowprops=dict(arrowstyle='->', color=color, lw=1.5),
+                zorder=11,
+            )
+
+        ax.axhline(rf * 100, color=BDI_MUTED, linewidth=0.8,
                    linestyle=':', alpha=0.6, label=f'Rf = {pct(rf)}')
+
+        # Zoom al rango de datos relevante con padding
+        x_pad = x_range * 0.15
+        y_pad = y_range * 0.20
+        ax.set_xlim(sim_vol_arr.min() * 100 - x_pad, sim_vol_arr.max() * 100 + x_pad)
+        ax.set_ylim(sim_ret_arr.min() * 100 - y_pad, sim_ret_arr.max() * 100 + y_pad)
+
         ax.set_title('Espacio de Portfolios — Modelo de Markowitz',
-                     fontsize=16, fontweight='bold', color='white', pad=16)
+                     fontsize=16, fontweight='bold', color=BDI_CREAM, pad=16)
         ax.set_xlabel('Volatilidad Anual (%)', fontsize=12, labelpad=10)
         ax.set_ylabel('Retorno Anual (%)', fontsize=12, labelpad=10)
         ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax.legend(fontsize=9, framealpha=0.85, loc='upper left')
-        ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=11, framealpha=0.9, loc='upper left',
+                  fancybox=True, shadow=False)
+        ax.grid(True, alpha=0.25)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
@@ -559,8 +699,18 @@ if run_button:
 
     # ── Tab 2 — Composición (Donut charts) ────────────────────────────
     with tab2:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">🥧 Composición de los portafolios óptimos</strong><br/>
+            Cada gráfico de dona muestra la asignación de pesos recomendada para cada estrategia de optimización.
+            El número central indica el <strong>retorno anual esperado</strong>. Debajo se muestran el
+            <strong>Sharpe Ratio</strong> y la <strong>volatilidad</strong> del portafolio. La tabla al pie
+            detalla los porcentajes exactos por activo.
+        </div>
+        """, unsafe_allow_html=True)
+
         n_ports = len(portfolios)
-        fig, axes = plt.subplots(1, n_ports, figsize=(5 * n_ports, 6))
+        fig, axes = plt.subplots(1, n_ports, figsize=(5.5 * n_ports, 7))
         if n_ports == 1:
             axes = [axes]
 
@@ -578,28 +728,28 @@ if run_button:
                 sizes, labels=None, colors=colors,
                 autopct=lambda p: f'{p:.1f}%' if p > 2 else '',
                 startangle=90, pctdistance=0.75,
-                wedgeprops={'linewidth': 2, 'edgecolor': BDI_DARK, 'width': 0.6},
+                wedgeprops={'linewidth': 2, 'edgecolor': BDI_DARK_BG, 'width': 0.62},
             )
             for at in autotexts:
-                at.set_fontsize(8)
+                at.set_fontsize(12)      # agrandado de 8 → 12
                 at.set_color('white')
                 at.set_fontweight('bold')
 
             m = metricas[name]
-            ax.text(0,  0.10, pct(m['Retorno Anual']),
-                    ha='center', va='center', fontsize=14,
-                    fontweight='bold', color=BDI_GOLD)
-            ax.text(0, -0.12, f"Sharpe: {m['Sharpe Ratio']:.2f}",
-                    ha='center', va='center', fontsize=9, color=BDI_LIGHTGREY)
-            ax.text(0, -0.30, f"Vol: {pct(m['Volatilidad'])}",
-                    ha='center', va='center', fontsize=9, color=BDI_LIGHTBLUE)
+            ax.text(0,  0.12, pct(m['Retorno Anual']),
+                    ha='center', va='center', fontsize=17,
+                    fontweight='bold', color=BDI_LIME)
+            ax.text(0, -0.13, f"Sharpe: {m['Sharpe Ratio']:.2f}",
+                    ha='center', va='center', fontsize=10, color=BDI_CREAM)
+            ax.text(0, -0.32, f"Vol: {pct(m['Volatilidad'])}",
+                    ha='center', va='center', fontsize=10, color=BDI_TEAL)
             ax.legend(wedges, [f"{l} ({s*100:.1f}%)" for l, s in zip(labels, sizes)],
-                      loc='lower center', bbox_to_anchor=(0.5, -0.28),
-                      fontsize=8, framealpha=0.7, ncol=2)
-            ax.set_title(name, fontsize=11, fontweight='bold', color='white', pad=12)
+                      loc='lower center', bbox_to_anchor=(0.5, -0.30),
+                      fontsize=10, framealpha=0.75, ncol=2)  # agrandado de 8 → 10
+            ax.set_title(name, fontsize=12, fontweight='bold', color=BDI_CREAM, pad=14)
 
         fig.suptitle('Composición de Portfolios Óptimos',
-                     fontsize=15, fontweight='bold', color='white', y=1.02)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, y=1.02)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
@@ -615,25 +765,35 @@ if run_button:
 
     # ── Tab 3 — Rendimiento acumulado: portfolios ──────────────────────
     with tab3:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">📈 Rendimiento acumulado de los portafolios</strong><br/>
+            Este gráfico muestra cómo habría evolucionado una inversión inicial en cada portafolio a lo largo
+            del período histórico analizado. Permite comparar visualmente la performance relativa de cada
+            estrategia de optimización en distintos contextos de mercado (subas, bajas, lateralizaciones).
+            El valor final de cada línea se indica al extremo derecho del gráfico.
+        </div>
+        """, unsafe_allow_html=True)
+
         fig, ax = plt.subplots(figsize=(13, 6))
         for i, col in enumerate(cum_port.columns):
             ax.plot(cum_port.index, cum_port[col] * 100,
                     label=col, linewidth=2.5,
                     color=PORT_COLORS[i % len(PORT_COLORS)])
-        ax.axhline(0, color=BDI_LIGHTGREY, linewidth=0.6, linestyle='--', alpha=0.5)
+        ax.axhline(0, color=BDI_MUTED, linewidth=0.6, linestyle='--', alpha=0.5)
         ax.fill_between(cum_port.index, 0, cum_port.iloc[:, 0] * 100,
-                        alpha=0.06, color=BDI_GOLD)
+                        alpha=0.06, color=BDI_GREEN)
         for i, (col, val) in enumerate((cum_port.iloc[-1] * 100).items()):
             ax.annotate(f' {val:.1f}%', xy=(cum_port.index[-1], val),
                         fontsize=9, color=PORT_COLORS[i % len(PORT_COLORS)],
                         va='center', fontweight='bold')
         ax.set_title('Rendimiento Acumulado — Portfolios Óptimos',
-                     fontsize=15, fontweight='bold', color='white', pad=12)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
         ax.legend(fontsize=10, framealpha=0.85)
-        ax.grid(True, alpha=0.3)
+        ax.grid(True, alpha=0.25)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
@@ -641,12 +801,22 @@ if run_button:
 
     # ── Tab 4 — Rendimiento acumulado: activos individuales ───────────
     with tab4:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">📈 Rendimiento acumulado por activo individual</strong><br/>
+            Visualizá cómo se desempeñó cada activo de forma independiente durante el período analizado.
+            Esto permite identificar qué instrumentos lideraron el crecimiento, cuáles tuvieron mayor
+            volatilidad y cómo interactuaron entre sí. La diversificación busca combinarlos para suavizar
+            las caídas sin sacrificar retorno.
+        </div>
+        """, unsafe_allow_html=True)
+
         fig, ax = plt.subplots(figsize=(13, 6))
         for i, col in enumerate(cum_assets.columns):
             ax.plot(cum_assets.index, cum_assets[col] * 100,
                     label=col, linewidth=1.8,
                     color=PALETTE[i % len(PALETTE)], alpha=0.85)
-        ax.axhline(0, color=BDI_LIGHTGREY, linewidth=0.6, linestyle='--', alpha=0.5)
+        ax.axhline(0, color=BDI_MUTED, linewidth=0.6, linestyle='--', alpha=0.5)
         final_a = cum_assets.iloc[-1] * 100
         for i, (col, val) in enumerate(final_a.sort_values(ascending=False).items()):
             ax.annotate(
@@ -657,13 +827,13 @@ if run_button:
                 va='center',
             )
         ax.set_title('Rendimiento Acumulado — Activos Individuales',
-                     fontsize=15, fontweight='bold', color='white', pad=12)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
         ax.legend(fontsize=9, framealpha=0.8,
                   bbox_to_anchor=(1.01, 1), loc='upper left')
-        ax.grid(True, alpha=0.3)
+        ax.grid(True, alpha=0.25)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
@@ -671,6 +841,17 @@ if run_button:
 
     # ── Tab 5 — Métricas comparativas (barras) ────────────────────────
     with tab5:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">📊 Comparación de métricas entre portafolios</strong><br/>
+            Los cuatro paneles comparan las métricas clave de cada estrategia: <strong>Retorno Anual</strong>
+            (cuánto creció en promedio), <strong>Volatilidad</strong> (nivel de riesgo o fluctuación),
+            <strong>Sharpe Ratio</strong> (retorno ajustado por riesgo; mayor es mejor) y
+            <strong>Máximo Drawdown</strong> (peor caída desde un pico; menos negativo es mejor).
+            El borde dorado resalta el mejor portafolio en cada categoría.
+        </div>
+        """, unsafe_allow_html=True)
+
         port_names    = list(portfolios.keys())
         metricas_plot = [
             ('Retorno Anual',  'Retorno Anual (%)',     True),
@@ -684,26 +865,26 @@ if run_button:
             scale = 100 if '%' in ylabel else 1
             bars  = ax.bar(port_names, [v * scale for v in vals],
                            color=PORT_COLORS[:len(port_names)],
-                           edgecolor=BDI_DARK, linewidth=1.2, width=0.5)
+                           edgecolor=BDI_DARK_BG, linewidth=1.2, width=0.5)
             best_idx = np.argmax(vals) if higher_better else np.argmin(vals)
-            bars[best_idx].set_edgecolor(BDI_GOLD)
-            bars[best_idx].set_linewidth(2.5)
+            bars[best_idx].set_edgecolor(BDI_LIME)
+            bars[best_idx].set_linewidth(2.8)
             for bar, val in zip(bars, vals):
                 lbl = f'{val*100:.1f}%' if '%' in ylabel else f'{val:.2f}'
                 ax.text(
                     bar.get_x() + bar.get_width() / 2,
                     bar.get_height() + abs(bar.get_height()) * 0.03,
                     lbl, ha='center', va='bottom',
-                    fontsize=9, fontweight='bold', color='white',
+                    fontsize=9, fontweight='bold', color=BDI_CREAM,
                 )
-            ax.set_title(ylabel, fontsize=12, fontweight='bold', color='white')
+            ax.set_title(ylabel, fontsize=12, fontweight='bold', color=BDI_CREAM)
             if '%' in ylabel:
                 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
             ax.set_xticklabels(port_names, rotation=15, ha='right', fontsize=9)
-            ax.grid(axis='y', alpha=0.3)
+            ax.grid(axis='y', alpha=0.25)
 
         fig.suptitle('Comparación de Métricas — Portfolios Óptimos',
-                     fontsize=15, fontweight='bold', color='white', y=1.01)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, y=1.01)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
@@ -722,24 +903,50 @@ if run_button:
 
     # ── Tab 6 — Matriz de correlación ─────────────────────────────────
     with tab6:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">🔥 Matriz de correlación entre activos</strong><br/>
+            Muestra el grado de movimiento conjunto entre pares de activos. Un valor cercano a
+            <strong>+1</strong> (rojo oscuro) indica que los activos suben y bajan juntos, lo que reduce
+            el beneficio de diversificación. Un valor cercano a <strong>0</strong> (rojo claro) indica
+            baja correlación, lo que es ideal para reducir el riesgo total del portafolio.
+            Buscar activos con baja correlación entre sí es la clave del modelo de Markowitz.
+        </div>
+        """, unsafe_allow_html=True)
+
         fig, ax = plt.subplots(figsize=(max(8, num_assets + 2), max(6, num_assets + 1)))
-        cmap_bdi = LinearSegmentedColormap.from_list(
-            'BDI', ['#1565c0', '#0d2137', '#b71c1c'], N=256
+
+        # Mapa de color rojo: claro = baja correlación, oscuro = alta correlación
+        cmap_red = LinearSegmentedColormap.from_list(
+            'BDI_RED',
+            ['#ffebee', '#ffcdd2', '#ef9a9a', '#e57373',
+             '#ef5350', '#e53935', '#c62828', '#b71c1c', '#7f0000'],
+            N=256
         )
+
         sns.heatmap(
             corr_matrix, ax=ax,
             annot=True, fmt='.2f',
-            annot_kws={'size': 10, 'color': 'white', 'weight': 'bold'},
-            cmap=cmap_bdi, vmin=-1, vmax=1,
-            linewidths=0.8, linecolor=BDI_DARK, square=True,
+            annot_kws={'size': 10, 'weight': 'bold'},
+            cmap=cmap_red, vmin=0, vmax=1,
+            linewidths=0.8, linecolor=BDI_DARK_BG, square=True,
             cbar_kws={'shrink': 0.8, 'label': 'Correlación', 'pad': 0.02},
         )
+
+        # Texto adaptivo: oscuro sobre celdas claras, claro sobre celdas oscuras
+        for text_obj in ax.texts:
+            try:
+                val = float(text_obj.get_text())
+                text_obj.set_color('#1c1c1c' if val < 0.55 else '#EFEDEA')
+            except Exception:
+                pass
+
         ax.set_title('Matriz de Correlación entre Activos',
-                     fontsize=15, fontweight='bold', color='white', pad=14)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, pad=14)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right',
-                           fontsize=10, color='white')
+                           fontsize=10, color=BDI_CREAM)
         ax.set_yticklabels(ax.get_yticklabels(), rotation=0,
-                           fontsize=10, color='white')
+                           fontsize=10, color=BDI_CREAM)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
@@ -747,12 +954,22 @@ if run_button:
 
     # ── Tab 7 — CAGR comparativo ──────────────────────────────────────
     with tab7:
+        st.markdown("""
+        <div class="info-box">
+            <strong style="color:#B5E61D;">📊 CAGR — Tasa de Crecimiento Anual Compuesta</strong><br/>
+            El CAGR representa la tasa a la que una inversión habría crecido año a año de forma constante
+            para llegar al valor final observado. A diferencia del retorno simple, el CAGR toma en cuenta
+            el efecto del interés compuesto. Es la métrica más adecuada para comparar el crecimiento
+            real de distintos activos y portafolios en el largo plazo.
+        </div>
+        """, unsafe_allow_html=True)
+
         cagr_activos = {a: calc_cagr(cum_assets[a]) * 100 for a in assets}
         cagr_ports   = {p: calc_cagr(cum_port[p])   * 100 for p in port_daily.columns}
         all_names    = list(cagr_activos) + list(cagr_ports)
         all_vals     = list(cagr_activos.values()) + list(cagr_ports.values())
-        all_types    = ['Activo'] * len(cagr_activos) + ['PortFolio'] * len(cagr_ports)
-        type_color   = {'Activo': BDI_LIGHTBLUE, 'PortFolio': BDI_GOLD}
+        all_types    = ['Activo'] * len(cagr_activos) + ['Portfolio'] * len(cagr_ports)
+        type_color   = {'Activo': BDI_TEAL, 'PortFolio': BDI_LIME}
 
         sorted_data  = sorted(zip(all_vals, all_names, all_types), reverse=True)
         s_vals, s_names, s_types = zip(*sorted_data)
@@ -760,25 +977,58 @@ if run_button:
         fig, ax = plt.subplots(figsize=(max(10, len(all_names) * 1.2), 7))
         bars = ax.bar(s_names, s_vals,
                       color=[type_color[t] for t in s_types],
-                      edgecolor=BDI_DARK, linewidth=1.2, width=0.6)
+                      edgecolor=BDI_DARK_BG, linewidth=1.2, width=0.6)
         for bar, val in zip(bars, s_vals):
             ax.text(bar.get_x() + bar.get_width() / 2,
                     val + (0.5 if val >= 0 else -1.5),
                     f'{val:.1f}%', ha='center', va='bottom',
-                    fontsize=9, fontweight='bold', color='white')
-        ax.axhline(0, color=BDI_LIGHTGREY, linewidth=0.8, linestyle='--', alpha=0.6)
+                    fontsize=9, fontweight='bold', color=BDI_CREAM)
+        ax.axhline(0, color=BDI_MUTED, linewidth=0.8, linestyle='--', alpha=0.6)
         ax.set_title('CAGR Anual Comparativo — Activos y Portfolios',
-                     fontsize=15, fontweight='bold', color='white', pad=12)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_ylabel('CAGR Anual (%)', fontsize=11)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
         ax.set_xticklabels(s_names, rotation=35, ha='right', fontsize=10)
-        ax.grid(axis='y', alpha=0.3)
+        ax.grid(axis='y', alpha=0.25)
         legend_elems = [mpatches.Patch(color=c, label=t) for t, c in type_color.items()]
-        ax.legend(handles=legend_elems, fontsize=10, framealpha=0.8)
+        ax.legend(handles=legend_elems, fontsize=10, framealpha=0.85)
         add_bdi_watermark(fig)
         plt.tight_layout()
         st.pyplot(fig)
         plt.close(fig)
+
+    # ─────────────────────────────────────────────────────────────────
+    #  IDEAS DE MEJORA
+    # ─────────────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("""
+    <div class="ideas-box">
+        <h3 style="color:#B5E61D; margin-top:0; font-size:1.3rem;">
+            💡 3 Ideas de mejora para análisis de carteras de clientes
+        </h3>
+        <div class="idea-item">
+            <strong style="color:#17BEBB;">1. Simulación de escenarios y aportes periódicos</strong><br/>
+            Incorporar la posibilidad de simular escenarios históricos (crisis 2008, COVID 2020, suba de tasas 2022)
+            y calcular cómo habría respondido cada portafolio. Además, agregar un módulo de
+            <strong>aportes periódicos</strong> para mostrar el efecto del promediado de costos (DCA)
+            sobre el capital final del cliente.
+        </div>
+        <div class="idea-item">
+            <strong style="color:#17BEBB;">2. Reporte PDF descargable con marca BDI</strong><br/>
+            Generar un <strong>informe PDF personalizado</strong> con el logo de BDI, los datos del cliente,
+            los gráficos generados y un resumen ejecutivo de recomendaciones. Ideal para presentaciones
+            profesionales o reuniones de asesoramiento, con todos los resultados exportables en un
+            documento listo para compartir.
+        </div>
+        <div class="idea-item">
+            <strong style="color:#17BEBB;">3. Análisis de riesgo extremo: VaR, CVaR y stress testing</strong><br/>
+            Agregar métricas de riesgo de cola como el <strong>Value at Risk (VaR)</strong> y el
+            <strong>Conditional VaR (CVaR)</strong> para cuantificar pérdidas extremas con distintos
+            niveles de confianza (95%, 99%). Complementar con stress tests que simulen shocks de mercado
+            extremos, dándole al cliente una visión realista del peor escenario posible para su cartera.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ─────────────────────────────────────────────────────────────────
     #  ADVERTENCIA LEGAL
@@ -789,7 +1039,7 @@ if run_button:
         Este análisis es de carácter exclusivamente informativo y educativo.
         No constituye asesoramiento financiero ni una recomendación de inversión.
         Los rendimientos pasados no garantizan resultados futuros.<br/>
-        <em>BDI Consultora de Inversiones · bdiconsultora@gmail.com</em>
+        <em>BDI Consultora de Inversiones · bdiconsultora@gmail.com · Mariano Ricciardi</em>
     </div>
     """, unsafe_allow_html=True)
 
