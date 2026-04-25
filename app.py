@@ -229,7 +229,7 @@ st.markdown("""
     .info-box {
         background-color: #1e2e22;
         border-left: 4px solid #137247;
-        border-radius: 0 8px 8px o;
+        border-radius: 0 8px 8px 0;
         padding: 1rem 1.4rem;
         margin-bottom: 1.2rem;
         color: #EFEDEA;
@@ -587,7 +587,7 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
         plt.close(fig)
 
-        # ════════════════════════════════════════════════════════════
+        # ══════════════════════════════════════════════════════════════
         # PÁGINA 6 — CORRELACIÓN
         # ══════════════════════════════════════════════════════════════
         fig, ax = plt.subplots(figsize=(max(7, num_assets + 2), max(6, num_assets + 1)))
@@ -627,7 +627,7 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         all_ty  = (['Activo'] * len(cagr_a) +
                    ['Personalizada' if p == 'Personalizada' else 'Portfolio'
                     for p in cagr_p])
-        tc      = {'Activo': BDI_TEAL, 'PortFolio': BDI_LIME, 'Personalizada': '#ab47bc'}
+        tc      = {'Activo': BDI_TEAL, 'Portfolio': BDI_LIME, 'Personalizada': '#ab47bc'}
         sd      = sorted(zip(all_v, all_n, all_ty), reverse=True)
         sv, sn, sty = zip(*sd)
         fig, ax = plt.subplots(figsize=(max(9, len(all_n) * 1.1), AH))
@@ -693,7 +693,7 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         d = pdf.infodict()
         d['Title']   = 'BDI — Análisis y Optimización de Cartera'
         d['Author']  = 'BDI Consultora de Inversiones — Mariano Ricciardi'
-        d['Subject'] = f'Portafolio: {", ".join(�H�
+        d['Subject'] = f'Portafolio: {", ".join(assets)}'
         d['Creator'] = 'BDI Optimizador de Carteras v2.0'
 
     buf.seek(0)
@@ -1197,7 +1197,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
 
         for i, (vol_p, ret_p, marker, sz, color, label) in enumerate(portfolios_plot):
             ax.scatter(vol_p * 100, ret_p * 100,
-                       marker=marker, s=sz, color=color, zorder=10,
+                        marker=marker, s=sz, color=color, zorder=10,
                        edgecolors='white', linewidth=1.2)
             # Anotación con flecha
             x_off = x_range * 0.05 * (1 if i % 2 == 0 else -1)
@@ -1222,7 +1222,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         ax.set_xlim(sim_vol_arr.min() * 100 - x_pad, sim_vol_arr.max() * 100 + x_pad)
         ax.set_ylim(sim_ret_arr.min() * 100 - y_pad, sim_ret_arr.max() * 100 + y_pad)
 
-        ax.set_title('Espacio de Portfolios — Modelo de Markowitz',
+        ax.set_title('Espacio de Portfolios ‒ Modelo de Markowitz',
                      fontsize=16, fontweight='bold', color=BDI_CREAM, pad=16)
         ax.set_xlabel('Volatilidad Anual (%)', fontsize=12, labelpad=10)
         ax.set_ylabel('Retorno Anual (%)', fontsize=12, labelpad=10)
@@ -1270,7 +1270,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 wedgeprops={'linewidth': 2, 'edgecolor': BDI_DARK_BG, 'width': 0.62},
             )
             for at in autotexts:
-                at.set_fontsize(12)      # agrandado de 8 → 12
+                at.set_fontsize(12)     # agrandado de 8 → 12
                 at.set_color('white')
                 at.set_fontweight('bold')
 
@@ -1326,7 +1326,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
             ax.annotate(f' {val:.1f}%', xy=(cum_port.index[-1], val),
                         fontsize=9, color=PORT_COLORS[i % len(PORT_COLORS)],
                         va='center', fontweight='bold')
-        ax.set_title('Rendimiento Acumulado — PortFolios Óptimos',
+        ax.set_title('Rendimiento Acumulado ‒ PortFolios Óptimos',
                      fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
@@ -1344,7 +1344,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         <div class="info-box">
             <strong style="color:#B5E61D;">📈 Rendimiento acumulado por activo individual</strong><br/>
             Visualizá cómo se desempeñó cada activo de forma independiente durante el período analizado.
-            Esto permite identificar qué instrumentos lideraron el crecimiento, cuáles tuvieron mayor
+            Esto permite identificar que instrumentos lideraron el crecimiento, cuáles tuvieron mayor
             volatilidad y cómo interactuaron entre sí. La diversificación busca combinarlos para suavizar
             las caídas sin sacrificar retorno.
         </div>
@@ -1365,8 +1365,8 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 color=PALETTE[list(cum_assets.columns).index(col) % len(PALETTE)],
                 va='center',
             )
-        ax.set_title('Rendimiento Acumulado — Activos Individuales',
-                     fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
+        ax.set_title('Rendimiento Acumulado ‒ Activos Individuales',
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, `pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
@@ -1402,7 +1402,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         for ax, (col, ylabel, higher_better) in zip(axes.flatten(), metricas_plot):
             vals  = [metricas[p][col] for p in port_names]
             scale = 100 if '%' in ylabel else 1
-            bars  = ax.bar(port_names, [v * scale for v in vals],
+            bars  = ax.bar(port_names, [v * scale for o in vals],
                            color=PORT_COLORS[:len(port_names)],
                            edgecolor=BDI_DARK_BG, linewidth=1.2, width=0.5)
             best_idx = np.argmax(vals) if higher_better else np.argmin(vals)
@@ -1510,9 +1510,9 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         def _port_type(name):
             if name == 'Personalizada':
                 return 'Personalizada'
-            return 'PortFolio'
+            return 'Portfolio'
         all_types    = ['Activo'] * len(cagr_activos) + [_port_type(p) for p in cagr_ports]
-        type_color   = {'Activo': BDI_TEAL, 'PortFolio': BDI_LIME, 'Personalizada': '#ab47bc'}
+        type_color   = {'Activo': BDI_TEAL, 'Portfolio': BDI_LIME, 'Personalizada': '#ab47bc'}
 
         sorted_data  = sorted(zip(all_vals, all_names, all_types), reverse=True)
         s_vals, s_names, s_types = zip(*sorted_data)
@@ -1527,7 +1527,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                     f'{val:.1f}%', ha='center', va='bottom',
                     fontsize=9, fontweight='bold', color=BDI_CREAM)
         ax.axhline(0, color=BDI_MUTED, linewidth=0.8, linestyle='--', alpha=0.6)
-        ax.set_title('CAGR Anual Comparativo — Activos y PortFolios',
+        ax.set_title('CAGR Anual Comparativo — Activos y Portfolios',
                      fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_ylabel('CAGR Anual (%)', fontsize=11)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
@@ -1687,7 +1687,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 <div class="info-box">
                     <strong style="color:#ef5350;">🔴 Perfil Conservador</strong><br/><br/>
                     Elegí el <strong>Portfolio de Mínima Volatilidad</strong>.<br/><br/>
-                    Menos riesgo de caídas · Menor Drawdown histórico · Sacrifica algo de retorno ·
+                    Menor riesgo de caídas · Menor Drawdown histórico · Sacrifica algo de retorno ·
                     Ideal para horizontes cortos o alta aversión al riesgo.
                 </div>
                 """, unsafe_allow_html=True)
