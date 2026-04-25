@@ -716,7 +716,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────
+# ────────────────────────────────────────────
 #  SIDEBAR — CONFIGURACIÓN
 # ─────────────────────────────────────────────
 with st.sidebar:
@@ -1081,7 +1081,7 @@ if run_button:
         "📊 CAGR",
     ])
 
-    # ── Tab 1 — Espacio de Markowitz ──────────────────────────────────
+    # ── Tab 1 — Espacio de Markowitz ─────────────────────────────────
     with tab1:
         st.markdown("""
         <div class="info-box">
@@ -1163,7 +1163,7 @@ if run_button:
         ax.set_xlim(sim_vol_arr.min() * 100 - x_pad, sim_vol_arr.max() * 100 + x_pad)
         ax.set_ylim(sim_ret_arr.min() * 100 - y_pad, sim_ret_arr.max() * 100 + y_pad)
 
-        ax.set_title('Espacio de Portfolios — Modelo de Markowitz',
+        ax.set_title('Espacio de PortFolios — Modelo de Markowitz',
                      fontsize=16, fontweight='bold', color=BDI_CREAM, pad=16)
         ax.set_xlabel('Volatilidad Anual (%)', fontsize=12, labelpad=10)
         ax.set_ylabel('Retorno Anual (%)', fontsize=12, labelpad=10)
@@ -1378,7 +1378,7 @@ if run_button:
         for c in fmt_pct:
             df_disp[c] = df_disp[c].apply(pct)
         for c in fmt_ratio:
-            df_disp[c] = df_disp[c].apply(lambda x: f"{x:.4f}")
+            df_disp[c] = df_disp[c].apply(lambda x: f"{r:.4f}")
         st.dataframe(df_disp, use_container_width=True)
 
     # ── Tab 6 — Matriz de correlación ─────────────────────────────────
@@ -1483,7 +1483,7 @@ if run_button:
 
     # ─────────────────────────────────────────────────────────────────
     #  REPORTE PDF DESCARGABLE
-    # ─────────────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────
     st.markdown("---")
     st.markdown("## 📥 Reporte PDF Descargable")
 
@@ -1536,9 +1536,6 @@ if run_button:
                 )
                 st.session_state['pdf_bytes'] = pdf_bytes
                 st.session_state['pdf_ready'] = True
-
-        if st.session_state.get('pdf_ready'):
-            fname = f"BDI_Cartera_{datetime.now().s         st.session_state['pdf_ready'] = True
 
         if st.session_state.get('pdf_ready'):
             fname = f"BDI_Cartera_{datetime.now().strftime('%Y%m%d')}.pdf"
