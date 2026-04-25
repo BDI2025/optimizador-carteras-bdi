@@ -49,7 +49,7 @@ PALETTE = [
     '#ff7043', '#7e57c2', '#26c6da', '#66bb6a',
 ]
 
-PORT_COLORS = [BDI_GREEN, BDI_TEAL, BDI_LIME, '#ffa726']
+PORT_COLORS = [BDI_GREEN, BDI_TEAL, BDI_LIME, '#ffa726', '#ab47bc']
 
 plt.rcParams.update({
     'figure.facecolor': BDI_DARK_BG,
@@ -320,7 +320,12 @@ with st.sidebar:
         "Tickers separados por coma",
         value="JPM, AAPL, MSFT, GOOGL, MELI",
         height=85,
-        help="Usá el mismo formato de ticker que figura en Yahoo Finance. Ej: JPM, AAPL, MSFT, MELI, GOOGL, SPY, GLD, XOM",
+        help="Usá el mismo formato de ticker que figura en Yahoo Finance. Ej: JPM, AAPL, MSFT, MELI, GOOGL, SPY, GLD, XOM.\n\n"
+             "Para agregar una cartera personalizada indicá el peso (%): JPM:30, AAPL:25, MSFT:20, GOOGL:15, MELI:10",
+    )
+    st.caption(
+        "💡 **Tip:** Podés especificar pesos para una cartera personalizada. "
+        "Ej: `JPM:30, AAPL:25, MSFT:20, GOOGL:15, MELI:10`"
     )
 
     st.markdown("---")
@@ -392,6 +397,11 @@ if not run_button and 'results_ready' not in st.session_state:
             SPY &nbsp;·&nbsp; QQQ &nbsp;·&nbsp; IWM &nbsp;·&nbsp; GLD &nbsp;·&nbsp; TLT<br/>
             <strong style="color:#17BEBB;">Latinoamérica:</strong>
             MELI &nbsp;·&nbsp; NU &nbsp;·&nbsp; PBR<br/><br/>
+            <strong style="color:#B5E61D;">💼 Cartera personalizada con pesos:</strong><br/>
+            <span style="color:#EFEDEA; font-size:0.9rem;">
+                Agregá el peso (%) después de cada ticker con <code>:</code><br/>
+                Ej: <code>JPM:30, AAPL:25, MSFT:20, GOOGL:15, MELI:10</code>
+            </span><br/><br/>
             <span style="color:#9e9e9e; font-size:0.85rem;">
                 ⚠️ Ingresá los tickers exactamente como aparecen en
                 <strong>Yahoo Finance</strong> para asegurar la descarga de datos.
@@ -410,7 +420,7 @@ if not run_button and 'results_ready' not in st.session_state:
             ("1", "Ingresá los tickers", "En el panel izquierdo, escribí los símbolos de los activos separados por coma (ej: <strong>AAPL, MSFT, JPM</strong>). Usá el formato de Yahoo Finance."),
             ("2", "Elegí el período", "Seleccioná cuántos años de historia histórica querés analizar (1 a 15 años). Más años = mayor robustez estadística."),
             ("3", "Configurá parámetros", "Ajustá la tasa libre de riesgo (referencia: tasa de la Fed o bono del Tesoro) y las restricciones de peso por activo."),
-            ("4", "Ejecutá el análisis", "Presioná <strong style='color:#B5E61D;'>🚀 EJECUTAR ANÁLISIS</strong>. Se calcularán los portafolios óptimos por Sharpe, mínima volatilidad, equiponderado y —�pcionalmente— retorno objetivo."),
+            ("4", "Ejecutá el análisis", "Presioná <strong style='color:#B5E61D;'>🚀 EJECUTAR ANÁLISIS</strong>. Se calcularán los portafolios óptimos por Sharpe, mínima volatilidad, equiponderado y —opcionalmente— retorno objetivo."),
             ("5", "Explorá los resultados", "Navegá las pestañas: Espacio de Markowitz, Composición, Rendimiento, Métricas, Correlación y CAGR."),
         ]
 
@@ -430,8 +440,38 @@ if not run_button and 'results_ready' not in st.session_state:
 # ─────────────────────────────────────────────
 if run_button:
 
-    # ── Parse tickers ──────────────────────────────────────────────────
-    tickers = [t.strip().upper() for t in tickers_input.split(',') if t.strip()][:50]
+    # ── Parse tickers (soporta formato TICKER:PESO para cartera personalizada) ──
+    raw_items = [item.strip() for item in tickers_input.split(',') if item.strip()]
+    tickers = []
+    custom_weights_input = {}   # {TICKER: peso_porcentaje}
+    has_custom_weights   = False
+
+    for item in raw_items:
+        if ':' in item:
+            parts  = item.split(':', 1)
+            ticker = parts[0].strip().upper()
+            try:
+                weight_pct = float(parts[1].strip().rstrip('%'))
+                custom_weights_input[ticker] = weight_pct
+                has_custom_weights = True
+            except ValueError:
+                pass
+            if ticker:
+                tickers.append(ticker)
+        else:
+            t = item.strip().upper()
+            if t:
+                tickers.append(t)
+
+    # Deduplicar conservando orden + limitar a 50
+    seen = set()
+    tickers_unique = []
+    for t in tickers:
+        if t not in seen:
+            seen.add(t)
+            tickers_unique.append(t)
+    tickers = tickers_unique[:50]
+
     if not tickers:
         st.error("❌ Ingresá al menos 1 ticker.")
         st.stop()
@@ -548,6 +588,24 @@ if run_button:
     if w_obj_arr is not None:
         portfolios[obj_label] = w_obj_arr
 
+    # ── Cartera personalizada (si se ingresaron pesos) ─────────────────
+    ret_custom = vol_custom = sharpe_custom = np.nan
+    if has_custom_weights:
+        avail = {t: custom_weights_input[t] for t in assets if t in custom_weights_input}
+        if avail:
+            total_pesos = sum(avail.values())
+            if total_pesos > 0:
+                w_custom = np.array([avail.get(a, 0.0) / total_pesos for a in assets])
+                portfolios['Personalizada'] = w_custom
+                ret_custom, vol_custom, sharpe_custom = _ps(w_custom)
+                sin_peso = [a for a in assets if a not in avail]
+                if sin_peso:
+                    st.info(f"ℹ️ Activos sin peso especificado asignados a 0%: {', '.join(sin_peso)}")
+            else:
+                st.warning("⚠️ Los pesos indicados suman 0. Se omite la cartera personalizada.")
+        else:
+            st.warning("⚠️ Ningún ticker con peso coincide con los activos descargados. Se omite la cartera personalizada.")
+
     rf_daily   = rf / 252
     port_daily = pd.DataFrame({n: returns[assets].dot(w) for n, w in portfolios.items()})
     cum_port   = (1 + port_daily).cumprod() - 1
@@ -571,7 +629,7 @@ if run_button:
     # ─────────────────────────────────────────────────────────────────
     #  SECCIÓN 1 — MÉTRICAS PRINCIPALES
     # ─────────────────────────────────────────────────────────────────
-    st.markdown("## 📊 Resumen de Portfolios Óptimos")
+    st.markdown("## 📊 Resumen de PortFolios Óptimos")
 
     for i, (name, m) in enumerate(metricas.items()):
         color = PORT_COLORS[i % len(PORT_COLORS)]
@@ -650,6 +708,10 @@ if run_button:
         if w_obj_arr is not None:
             portfolios_plot.append(
                 (vol_obj, ret_obj_real, 'P', 220, '#ffa726', f'Obj. {pct(ret_obj)}\n({pct(ret_obj_real)})')
+            )
+        if 'Personalizada' in portfolios and not np.isnan(vol_custom):
+            portfolios_plot.append(
+                (vol_custom, ret_custom, '^', 240, '#ab47bc', f'Personalizada\n({pct(ret_custom)})')
             )
 
         # Calcular offsets para anotaciones automáticas
@@ -846,7 +908,7 @@ if run_button:
             <strong style="color:#B5E61D;">📊 Comparación de métricas entre portafolios</strong><br/>
             Los cuatro paneles comparan las métricas clave de cada estrategia: <strong>Retorno Anual</strong>
             (cuánto creció en promedio), <strong>Volatilidad</strong> (nivel de riesgo o fluctuación),
-            <strong>Sharpe Ratio</strong> (retorno ajustado por riesgo; mayor es mejor) y
+            <strong>Sharpe Ratio</strong> (retorno ajustado por riesgo; mayor e� mejor) y
             <strong>Máximo Drawdown</strong> (peor caída desde un pico; menos negativo es mejor).
             El borde dorado resalta el mejor portafolio en cada categoría.
         </div>
@@ -968,15 +1030,19 @@ if run_button:
         cagr_ports   = {p: calc_cagr(cum_port[p])   * 100 for p in port_daily.columns}
         all_names    = list(cagr_activos) + list(cagr_ports)
         all_vals     = list(cagr_activos.values()) + list(cagr_ports.values())
-        all_types    = ['Activo'] * len(cagr_activos) + ['Portfolio'] * len(cagr_ports)
-        type_color   = {'Activo': BDI_TEAL, 'PortFolio': BDI_LIME}
+        def _port_type(name):
+            if name == 'Personalizada':
+                return 'Personalizada'
+            return 'PortFolio'
+        all_types    = ['Activo'] * len(cagr_activos) + [_port_type(p) for p in cagr_ports]
+        type_color   = {'Activo': BDI_TEAL, 'PortFolio': BDI_LIME, 'Personalizada': '#ab47bc'}
 
         sorted_data  = sorted(zip(all_vals, all_names, all_types), reverse=True)
         s_vals, s_names, s_types = zip(*sorted_data)
 
         fig, ax = plt.subplots(figsize=(max(10, len(all_names) * 1.2), 7))
         bars = ax.bar(s_names, s_vals,
-                      color=[type_color[t] for t in s_types],
+                      color=[type_color.get(t, BDI_MUTED) for t in s_types],
                       edgecolor=BDI_DARK_BG, linewidth=1.2, width=0.6)
         for bar, val in zip(bars, s_vals):
             ax.text(bar.get_x() + bar.get_width() / 2,
