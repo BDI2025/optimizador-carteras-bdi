@@ -1366,7 +1366,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 va='center',
             )
         ax.set_title('Rendimiento Acumulado ‒ Activos Individuales',
-                     fontsize=15, fontweight='bold', color=BDI_CREAM, `pad=12)
+                     fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
