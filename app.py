@@ -1410,7 +1410,7 @@ if run_button:
     num_assets   = len(assets)
 
     bounds           = tuple((min_peso, max_peso) for _ in range(num_assets))
-    constraints_base = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1]},)
+    constraints_base = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1},)
     w0               = np.full(num_assets, 1.0 / num_assets)
 
     def _ps(v):
