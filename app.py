@@ -1,4 +1,4 @@
-# ============================================================ 
+# ============================================================
 #  OPTIMIZADOR DE CARTERA PROFESIONAL — STREAMLIT
 #  BDI Consultora de Inversiones
 #  Versión 2.0 — Modelo de Markowitz con Frontera Eficiente
@@ -6,6 +6,7 @@
 import warnings
 warnings.filterwarnings('ignore')
 import io
+import textwrap
 
 import streamlit as st
 import yfinance as yf
@@ -210,7 +211,7 @@ st.markdown("""
 
     /* Banner header */
     .bdi-header {
-        background: linear-gradient(135deg, #0d4d2e 0%, #137247 50%, #0e4a5a 100%);
+        background: linear-gradient(135deg, #0d2e1e 0%, #137247 50%, #0e4a5a 100%);
         border: 1px solid #17BEBB;
         border-radius: 14px;
         padding: 2rem 2.4rem;
@@ -343,155 +344,417 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                         ret_sharpe, ret_vol, sharpe_val, rf, anios, data_start, data_end,
                         w_obj_arr, vol_obj, ret_obj_real, obj_label,
                         has_custom_weights, vol_custom, ret_custom, cliente_nombre=""):
-    """Genera un informe PDF completo con 8 páginas y marca BDI."""
+    """Informe PDF — Opcion B Moderno Premium — fondo blanco, BDI branding."""
     num_assets = len(assets)
     buf        = io.BytesIO()
-    fecha_hoy  = datetime.now().strftime('%d/%m/%Y  %H:%M')
+    fecha_hoy  = datetime.now().strftime('%d/%m/%Y')
     AW, AH     = 11.69, 8.27   # landscape A4
 
-    def _wmark(fig):
-        fig.text(0.99, 0.01, 'BDI Consultora de Inversiones',
-                 ha='right', va='bottom', fontsize=7, color=BDI_TEAL, alpha=0.5, style='italic')
-        fig.text(0.01, 0.01, fecha_hoy,
-                 ha='left',  va='bottom', fontsize=7, color=BDI_MUTED, alpha=0.5)
+    # ── Paleta para fondo blanco ──────────────────────────────────────
+    WHITE  = '#FFFFFF'
+    DARK   = '#1A1A1A'
+    MUTED  = '#666666'
+    LIGHT  = '#F5F5F5'
+    BORDER = '#DEDEDE'
+
+    # Colores de portafolios sobre fondo blanco (lima → oliva oscuro)
+    PCW = [BDI_GREEN, BDI_TEAL, '#6e9900', '#e88c00', '#8e44ad']
+
+    def _footer(fig):
+        fig.text(0.5, 0.013, 'BDI Consultora de Inversiones  ·  hola@bdiconsultora.com',
+                 ha='center', va='bottom', fontsize=7,
+                 color=BDI_GREEN, alpha=0.80, style='italic')
+        fig.text(0.02, 0.013, fecha_hoy,
+                 ha='left', va='bottom', fontsize=7, color=MUTED, alpha=0.7)
+
+    def _ax_off(ax, bg=WHITE):
+        ax.set_facecolor(bg)
+        ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+        ax.axis('off')
+
+    def _left_border(ax, color, width=0.012):
+        ax.add_patch(mpatches.Rectangle(
+            (0, 0), width, 1, transform=ax.transAxes,
+            facecolor=color, edgecolor='none', zorder=3))
+
+    def _card_bg(ax, bg='#F9FAFB'):
+        ax.set_facecolor(bg)
+        for sp in ax.spines.values():
+            sp.set_edgecolor(BORDER); sp.set_linewidth(0.5)
+
+    def _section_strip(fig, bottom, height, title, subtitle='', accent=BDI_GREEN):
+        ax_s = fig.add_axes([0, bottom, 1, height])
+        _ax_off(ax_s, LIGHT)
+        ax_s.add_patch(mpatches.Rectangle(
+            (0, 0), 0.005, 1, transform=ax_s.transAxes,
+            facecolor=accent, edgecolor='none'))
+        ax_s.text(0.025, 0.70, title, fontsize=13, fontweight='bold',
+                  color=accent, va='top', transform=ax_s.transAxes)
+        if subtitle:
+            ax_s.text(0.025, 0.25, subtitle, fontsize=8.5,
+                      color=MUTED, va='top', transform=ax_s.transAxes)
 
     with PdfPages(buf) as pdf:
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 1 — CARÁTULA (portrait A4)
+        # PAGINA 1 — PORTADA (Portrait A4)
         # ══════════════════════════════════════════════════════════════
         fig = plt.figure(figsize=(8.27, 11.69))
-        fig.patch.set_facecolor(BDI_DARK_BG)
+        fig.patch.set_facecolor(WHITE)
 
-        ax_b = fig.add_axes([0.04, 0.83, 0.92, 0.12])
-        ax_b.set_facecolor(BDI_GREEN_DK)
-        for sp in ax_b.spines.values():
-            sp.set_edgecolor(BDI_TEAL); sp.set_linewidth(2)
-        ax_b.axis('off')
-        ax_b.text(0.5, 0.70, '⚡  BDI — OPTIMIZADOR DE CARTERAS v2.0',
-                  ha='center', va='center', fontsize=17, fontweight='bold',
-                  color=BDI_CREAM, transform=ax_b.transAxes)
-        ax_b.text(0.5, 0.28, 'Modelo de Markowitz con Frontera Eficiente',
-                  ha='center', va='center', fontsize=11, color=BDI_LIME,
-                  transform=ax_b.transAxes)
+        # Header gradient verde → teal
+        ax_h = fig.add_axes([0, 0.80, 1, 0.20])
+        ax_h.set_xlim(0, 1); ax_h.set_ylim(0, 1)
+        cmap_gt = LinearSegmentedColormap.from_list('gt', [BDI_GREEN, BDI_TEAL])
+        ax_h.imshow(np.linspace(0, 1, 256).reshape(1, -1),
+                    aspect='auto', cmap=cmap_gt, extent=[0, 1, 0, 1], zorder=0)
+        ax_h.axis('off')
+        ax_h.text(0.06, 0.78, 'BDI', fontsize=46, fontweight='bold',
+                  color=WHITE, va='top')
+        ax_h.text(0.06, 0.44, 'CONSULTORA DE INVERSIONES', fontsize=9.5,
+                  color=BDI_LIME, va='top', fontweight='bold')
+        ax_h.text(0.06, 0.17, 'hola@bdiconsultora.com', fontsize=8.5,
+                  color=WHITE, va='top', alpha=0.90)
 
-        ax_i = fig.add_axes([0.04, 0.55, 0.92, 0.26])
-        ax_i.set_facecolor(BDI_CARD_BG)
-        for sp in ax_i.spines.values():
-            sp.set_edgecolor(BDI_BORDER); sp.set_linewidth(1)
-        ax_i.axis('off')
+        # Titulo
+        ax_ti = fig.add_axes([0.06, 0.62, 0.88, 0.17])
+        _ax_off(ax_ti)
+        ax_ti.text(0, 0.88, 'Informe de Optimizacion', fontsize=21,
+                   fontweight='bold', color=DARK, va='top', transform=ax_ti.transAxes)
+        ax_ti.text(0, 0.55, 'de Portafolio de Inversiones', fontsize=21,
+                   fontweight='bold', color=DARK, va='top', transform=ax_ti.transAxes)
+        ax_ti.text(0, 0.18, 'Modelo de Markowitz con Frontera Eficiente',
+                   fontsize=10.5, color=MUTED, va='top', transform=ax_ti.transAxes)
+
+        # Info box
+        ax_i = fig.add_axes([0.06, 0.38, 0.88, 0.22])
+        _card_bg(ax_i, LIGHT)
+        _ax_off(ax_i, LIGHT)
+        _left_border(ax_i, BDI_GREEN, 0.009)
         info_rows = []
         if cliente_nombre:
-            info_rows.append(('👤 Cliente:', cliente_nombre))
+            info_rows.append(('Cliente:', cliente_nombre))
         info_rows += [
-            ('📅 Fecha:', fecha_hoy),
-            ('📊 Período:', f'{anios} años  ({data_start} → {data_end})'),
-            ('📌 Activos:', ', '.join(assets)),
-            ('💼 PortFolios:', ', '.join(portfolios.keys())),
+            ('Fecha:', fecha_hoy),
+            ('Periodo:', f'{anios} anos  ({data_start}  a  {data_end})'),
+            ('Activos:', textwrap.fill(', '.join(assets), width=60)),
+            ('Portafolios:', textwrap.fill(', '.join(portfolios.keys()), width=60)),
         ]
-        y0 = 0.90
+        y0 = 0.88
         for lbl, val in info_rows:
-            ax_i.text(0.03, y0, lbl, fontsize=9, fontweight='bold',
-                      color=BDI_TEAL, transform=ax_i.transAxes, va='top')
-            ax_i.text(0.25, y0, val, fontsize=9, color=BDI_CREAM,
-                      transform=ax_i.transAxes, va='top')
-            y0 -= 0.17
+            ax_i.text(0.025, y0, lbl, fontsize=9, fontweight='bold',
+                      color=BDI_GREEN, va='top', transform=ax_i.transAxes)
+            lines_val = val.split('\n')
+            for k, line in enumerate(lines_val):
+                ax_i.text(0.22, y0 - k * 0.14, line, fontsize=9, color=DARK,
+                          va='top', transform=ax_i.transAxes)
+            y0 -= 0.17 + max(0, len(lines_val) - 1) * 0.14
 
-        ax_t = fig.add_axes([0.04, 0.18, 0.92, 0.34])
-        ax_t.set_facecolor(BDI_CARD_BG)
-        ax_t.axis('off')
-        ax_t.text(0.5, 0.96, '📊 Resumen de Resultados',
-                  ha='center', va='top', fontsize=11, fontweight='bold',
-                  color=BDI_LIME, transform=ax_t.transAxes)
-        cols_h = ['Portfolio', 'Retorno', 'Volatilidad', 'Sharpe', 'CAGR', 'Max DD']
-        col_xs = [0.01, 0.22, 0.37, 0.52, 0.66, 0.81]
+        # Tabla resumen
+        ax_tb = fig.add_axes([0.06, 0.10, 0.88, 0.26])
+        _ax_off(ax_tb)
+        ax_tb.text(0, 0.97, 'Resumen de resultados', fontsize=10.5,
+                   fontweight='bold', color=BDI_GREEN, va='top', transform=ax_tb.transAxes)
+        ax_tb.plot([0, 1], [0.88, 0.88], color=BDI_GREEN, linewidth=1.0,
+                   transform=ax_tb.transAxes)
+        cols_h = ['Portafolio', 'Retorno Anual', 'Volatilidad', 'Sharpe', 'CAGR', 'Max DD']
+        col_xs = [0.01, 0.22, 0.38, 0.52, 0.64, 0.78]
         for j, (h, cx) in enumerate(zip(cols_h, col_xs)):
-            ax_t.text(cx, 0.82, h, fontsize=8.5, fontweight='bold',
-                      color=BDI_TEAL, transform=ax_t.transAxes, va='top')
+            ax_tb.text(cx, 0.82, h, fontsize=8, fontweight='bold',
+                       color=MUTED, va='top', transform=ax_tb.transAxes)
+        ax_tb.plot([0, 1], [0.76, 0.76], color=BORDER, linewidth=0.5,
+                   transform=ax_tb.transAxes)
         for i, (name, m) in enumerate(metricas.items()):
-            yrow = 0.70 - i * 0.152
-            c_row = PORT_COLORS[i % len(PORT_COLORS)]
+            yrow = 0.70 - i * 0.17
+            if i % 2 == 0:
+                ax_tb.add_patch(mpatches.Rectangle(
+                    (0, yrow - 0.05), 1, 0.17, transform=ax_tb.transAxes,
+                    facecolor=LIGHT, edgecolor='none'))
+            c_row = PCW[i % len(PCW)]
             row_v = [name, pct(m['Retorno Anual']), pct(m['Volatilidad']),
                      f"{m['Sharpe Ratio']:.3f}", pct(m['CAGR']), pct(m['Máx. Drawdown'])]
             for j, (v, cx) in enumerate(zip(row_v, col_xs)):
-                ax_t.text(cx, yrow, v, fontsize=8.5, va='top',
-                          color=c_row if j == 0 else BDI_CREAM,
-                          fontweight='bold' if j == 0 else 'normal',
-                          transform=ax_t.transAxes)
+                ax_tb.text(cx, yrow, v, fontsize=8.5, va='top',
+                           color=c_row if j == 0 else DARK,
+                           fontweight='bold' if j == 0 else 'normal',
+                           transform=ax_tb.transAxes)
 
-        fig.text(0.5, 0.13, 'BDI Consultora de Inversiones  ·  bdiconsultora@gmail.com  ·  Mariano Ricciardi',
-                 ha='center', fontsize=9, color=BDI_TEAL, style='italic')
-        fig.text(0.5, 0.10, '⚠️ Análisis informativo. No constituye recomendación de inversión.',
-                 ha='center', fontsize=8, color=BDI_MUTED)
-        fig.text(0.5, 0.07, f'Generado: {fecha_hoy}',
-                 ha='center', fontsize=8, color=BDI_MUTED, alpha=0.7)
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+        _footer(fig)
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 2 — ESPACIO DE MARKOWITZ
+        # PAGINA 2 — LOS 4 PORTAFOLIOS (Portrait A4)
+        # ══════════════════════════════════════════════════════════════
+        fig = plt.figure(figsize=(8.27, 11.69))
+        fig.patch.set_facecolor(WHITE)
+
+        _section_strip(fig, 0.91, 0.07,
+                       'Que representan los 4 portafolios',
+                       'Cada portafolio responde a un criterio de optimizacion distinto '
+                       'y se adapta a un perfil de inversor especifico.',
+                       BDI_GREEN)
+
+        PORT_INFO = {
+            'Min. Volatilidad':  ('Min. Volatilidad',  BDI_TEAL,    'Conservador',   '#E0F7FA', '#004D55'),
+            'Mín. Volatilidad':  ('Mín. Volatilidad',  BDI_TEAL,    'Conservador',   '#E0F7FA', '#004D55'),
+            'Máx. Sharpe':       ('Máx. Sharpe',       BDI_GREEN,   'Moderado',      '#E8F5E9', '#1B5E20'),
+            'Max. Sharpe':       ('Max. Sharpe',        BDI_GREEN,   'Moderado',      '#E8F5E9', '#1B5E20'),
+            'Equiponderado':     ('Equiponderado',      '#6e9900',   'Diversificado', '#F1F8E9', '#2E5500'),
+            'Personalizada':     ('Personalizada',      '#8e44ad',   'A medida',      '#F3E5F5', '#4A148C'),
+        }
+        GENERIC_PORT = ('Objetivo',    '#e88c00',   'Objetivo',    '#FFF8E1', '#7B3A00')
+
+        DESC_PORT = {
+            'Conservador':   (
+                'Minimiza la varianza total del portafolio. Selecciona las ponderaciones '
+                'que reducen al maximo las fluctuaciones del valor, sin importar el retorno '
+                'esperado. Ideal para quienes priorizan la proteccion del capital y tienen '
+                'baja tolerancia a la volatilidad.'
+            ),
+            'Moderado':      (
+                'Maximiza el Ratio de Sharpe, es decir, el retorno adicional por unidad de '
+                'riesgo asumida. Es la cartera mas eficiente segun la Teoria Moderna de '
+                'Portafolios. Recomendada para inversores que buscan crecimiento sostenido '
+                'con riesgo controlado y horizonte de mediano plazo.'
+            ),
+            'Diversificado': (
+                'Asigna igual peso a cada activo sin ninguna optimizacion matematica. '
+                'Estrategia simple, robusta y transparente que garantiza diversificacion '
+                'absoluta. Sirve como punto de comparacion neutral y es apropiada para '
+                'quienes prefieren simplicidad sin concentrar en ningun activo.'
+            ),
+            'A medida':      (
+                'Distribucion definida directamente por el usuario, reflejando sus '
+                'convicciones, preferencias personales y experiencia propia. Permite '
+                'comparar la eleccion individual contra las carteras optimizadas '
+                'matematicamente y evaluar el costo o beneficio de esa decision.'
+            ),
+            'Objetivo':      (
+                'Construida buscando un retorno objetivo especifico dentro de la frontera '
+                'eficiente. Balancea el retorno esperado y el riesgo para alcanzar la '
+                'meta de rentabilidad indicada con el menor nivel de volatilidad posible.'
+            ),
+        }
+
+        port_list = list(portfolios.keys())
+        # 2 columnas x 2 filas — cada card 42% ancho, 36% alto
+        CW, CH   = 0.42, 0.36
+        GAP_X    = 0.04
+        MARGIN_L = 0.05
+        START_Y  = 0.88
+
+        for idx, pname in enumerate(port_list[:4]):
+            info_t = PORT_INFO.get(pname, None)
+            if info_t:
+                _, pc, profile, bb, bf = info_t
+            else:
+                _, pc, profile, bb, bf = GENERIC_PORT
+            desc = DESC_PORT.get(profile, DESC_PORT['Objetivo'])
+            col  = idx % 2
+            row  = idx // 2
+            cx   = MARGIN_L + col * (CW + GAP_X + MARGIN_L * 0.5)
+            cy   = START_Y - (row + 1) * CH - row * 0.035
+
+            ax_c = fig.add_axes([cx, cy, CW, CH])
+            _card_bg(ax_c, '#FAFAFA')
+            _ax_off(ax_c, '#FAFAFA')
+            _left_border(ax_c, pc, 0.022)
+
+            ax_c.text(0.055, 0.93, pname, fontsize=11, fontweight='bold',
+                      color=pc, va='top', transform=ax_c.transAxes)
+            ax_c.text(0.055, 0.76, f'Perfil: {profile}', fontsize=7.5,
+                      fontweight='bold', color=bf, va='top',
+                      transform=ax_c.transAxes,
+                      bbox=dict(boxstyle='round,pad=0.28', facecolor=bb, edgecolor='none'))
+            wrapped = textwrap.fill(desc, width=48)
+            ax_c.text(0.055, 0.60, wrapped, fontsize=7.5, color=DARK,
+                      va='top', transform=ax_c.transAxes, linespacing=1.45)
+
+            m = metricas.get(pname)
+            if m:
+                note = (f"Retorno: {pct(m['Retorno Anual'])}   "
+                        f"Vol: {pct(m['Volatilidad'])}   "
+                        f"Sharpe: {m['Sharpe Ratio']:.2f}")
+                ax_c.text(0.055, 0.06, note, fontsize=7.5, color=MUTED,
+                          va='bottom', transform=ax_c.transAxes,
+                          style='italic')
+
+        _footer(fig)
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
+        plt.close(fig)
+
+        # ══════════════════════════════════════════════════════════════
+        # PAGINA 3 — GLOSARIO DE METRICAS (Portrait A4)
+        # ══════════════════════════════════════════════════════════════
+        fig = plt.figure(figsize=(8.27, 11.69))
+        fig.patch.set_facecolor(WHITE)
+
+        _section_strip(fig, 0.92, 0.06,
+                       'Glosario de metricas del analisis',
+                       'Definicion de cada indicador utilizado para comparar y evaluar los portafolios.',
+                       BDI_TEAL)
+
+        METRICS_DEF = [
+            {
+                'name':    'Ratio de Sharpe',
+                'cat':     'Rentabilidad / Riesgo',
+                'cat_bg':  '#E8F5E9', 'cat_fg': '#1B5E20',
+                'color':   BDI_GREEN,
+                'desc':    ('Mide el retorno adicional obtenido por cada unidad de riesgo asumida, '
+                            'usando la tasa libre de riesgo como referencia. Un Sharpe mayor a 1 '
+                            'es bueno; mayor a 2 se considera excelente. Permite comparar '
+                            'portafolios con distintos niveles de riesgo en igualdad de condiciones.'),
+                'formula': 'Sharpe = (Rp - Rf) / sigma_p',
+                'fdetail': 'Rp: retorno portafolio   Rf: tasa libre de riesgo   sigma_p: volatilidad',
+            },
+            {
+                'name':    'CAGR — Tasa de Crecimiento Anual Compuesta',
+                'cat':     'Crecimiento',
+                'cat_bg':  '#E0F7FA', 'cat_fg': '#006064',
+                'color':   BDI_TEAL,
+                'desc':    ('Indica a que tasa creció el portafolio en promedio por año durante '
+                            'el periodo analizado. A diferencia del retorno simple, el CAGR '
+                            'considera el efecto del interes compuesto, reflejando el verdadero '
+                            'crecimiento anualizado de la inversion inicial.'),
+                'formula': 'CAGR = (Vf / Vi)^(1/n) - 1',
+                'fdetail': 'Vf: valor final   Vi: valor inicial   n: años del periodo',
+            },
+            {
+                'name':    'Volatilidad Anual',
+                'cat':     'Riesgo',
+                'cat_bg':  '#FFF8E1', 'cat_fg': '#7B3A00',
+                'color':   '#e88c00',
+                'desc':    ('Desviacion estandar anualizada de los retornos diarios. Cuantifica '
+                            'la incertidumbre o variacion esperada en el valor del portafolio. '
+                            'A mayor volatilidad, mayor incertidumbre sobre los resultados '
+                            'futuros. Los portafolios conservadores buscan minimizar este valor.'),
+                'formula': 'sigma_anual = sigma_diaria x sqrt(252)',
+                'fdetail': 'sigma_diaria: desvio estandar de retornos diarios   252: dias habiles/año',
+            },
+            {
+                'name':    'Maximo Drawdown',
+                'cat':     'Perdida Maxima',
+                'cat_bg':  '#FFEBEE', 'cat_fg': '#B71C1C',
+                'color':   '#c0392b',
+                'desc':    ('Caida porcentual maxima registrada desde el pico mas alto hasta el '
+                            'punto mas bajo dentro del periodo analizado. Es el indicador clave '
+                            'para evaluar la resistencia de un portafolio ante crisis o '
+                            'correcciones de mercado. Un drawdown menor implica mayor proteccion.'),
+                'formula': 'Max DD = (Valle - Pico) / Pico',
+                'fdetail': 'Valle: valor minimo posterior al pico   Pico: maximo historico previo',
+            },
+        ]
+
+        # 4 cards a lo largo de la pagina
+        M_START = 0.91
+        M_H     = 0.195
+        M_GAP   = 0.022
+
+        for idx, md in enumerate(METRICS_DEF):
+            cy_m = M_START - (idx + 1) * M_H - idx * M_GAP
+            ax_m = fig.add_axes([0.05, cy_m, 0.90, M_H])
+            _card_bg(ax_m, '#FAFAFA')
+            _ax_off(ax_m, '#FAFAFA')
+            _left_border(ax_m, md['color'], 0.010)
+
+            ax_m.text(0.025, 0.92, md['name'], fontsize=9.5, fontweight='bold',
+                      color=md['color'], va='top', transform=ax_m.transAxes)
+            ax_m.text(0.025, 0.70, md['cat'], fontsize=7, fontweight='bold',
+                      color=md['cat_fg'], va='top', transform=ax_m.transAxes,
+                      bbox=dict(boxstyle='round,pad=0.26',
+                                facecolor=md['cat_bg'], edgecolor='none'))
+            wrapped_m = textwrap.fill(md['desc'], width=88)
+            ax_m.text(0.025, 0.54, wrapped_m, fontsize=7.8, color=DARK,
+                      va='top', transform=ax_m.transAxes, linespacing=1.42)
+            ax_m.add_patch(mpatches.Rectangle(
+                (0.025, 0.0), 0.95, 0.20, transform=ax_m.transAxes,
+                facecolor=LIGHT, edgecolor='none'))
+            ax_m.text(0.040, 0.17, md['formula'], fontsize=8,
+                      color=md['color'], va='top', transform=ax_m.transAxes,
+                      fontfamily='monospace', fontweight='bold')
+            ax_m.text(0.040, 0.07, md['fdetail'], fontsize=7,
+                      color=MUTED, va='top', transform=ax_m.transAxes)
+
+        _footer(fig)
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
+        plt.close(fig)
+
+        # ══════════════════════════════════════════════════════════════
+        # PAGINA 4 — ESPACIO DE MARKOWITZ (Landscape, fondo blanco)
         # ══════════════════════════════════════════════════════════════
         fig, ax = plt.subplots(figsize=(AW, AH))
-        fig.patch.set_facecolor(BDI_DARK_BG)
+        fig.patch.set_facecolor(WHITE)
+        ax.set_facecolor('#F8F9FA')
+        for sp in ax.spines.values():
+            sp.set_color(BORDER)
+        ax.tick_params(colors=DARK)
         sc = ax.scatter(sim_vol_arr * 100, sim_ret_arr * 100,
-                        c=sim_sharpe_arr, cmap='plasma', alpha=0.22, s=4, zorder=1)
+                        c=sim_sharpe_arr, cmap='YlGn', alpha=0.30, s=4, zorder=1)
         cb = fig.colorbar(sc, ax=ax, pad=0.02)
-        cb.set_label('Sharpe Ratio', color=BDI_CREAM, fontsize=10)
-        cb.ax.yaxis.set_tick_params(color=BDI_CREAM, labelsize=9)
-        plt.setp(cb.ax.yaxis.get_ticklabels(), color=BDI_CREAM)
+        cb.set_label('Sharpe Ratio', color=DARK, fontsize=10)
+        cb.ax.yaxis.set_tick_params(color=DARK, labelsize=9)
+        plt.setp(cb.ax.yaxis.get_ticklabels(), color=DARK)
         valid = ~np.isnan(vol_fe)
         ax.plot(vol_fe[valid] * 100, ret_range[valid] * 100,
-                color=BDI_TEAL, linewidth=3.5, zorder=6,
+                color=BDI_GREEN, linewidth=3.5, zorder=6,
                 label='Frontera Eficiente', solid_capstyle='round')
         vcr = np.linspace(vol_min * 0.7, vol_sharpe * 1.3, 80)
         ax.plot(vcr * 100, rf * 100 + sharpe_val * vcr * 100,
-                '--', color=BDI_LIME, linewidth=1.8, alpha=0.9, zorder=4, label='CML')
-        pts = [(vol_sharpe, ret_sharpe, '*', 350, BDI_LIME,   f'Máx. Sharpe ({sharpe_val:.2f})'),
-               (vol_min,    ret_vol,    'D', 130, '#ef5350', f'Mín. Vol. ({pct(vol_min)})'),
-               (vol_eq,     ret_eq,     's', 130, BDI_TEAL,  f'Equip. ({pct(ret_eq)})')]
+                '--', color=BDI_TEAL, linewidth=1.8, alpha=0.9, zorder=4, label='CML')
+        pts4 = [(vol_sharpe, ret_sharpe, '*', 350, BDI_GREEN,
+                 f'Max Sharpe ({sharpe_val:.2f})'),
+                (vol_min,    ret_vol,    'D', 130, BDI_TEAL,
+                 f'Min Vol ({pct(vol_min)})'),
+                (vol_eq,     ret_eq,     's', 130, '#6e9900',
+                 f'Equip ({pct(ret_eq)})')]
         if w_obj_arr is not None:
-            pts.append((vol_obj, ret_obj_real, 'P', 150, '#ffa726',
-                        f'{obj_label} ({pct(ret_obj_real)})'))
+            pts4.append((vol_obj, ret_obj_real, 'P', 150, '#e88c00',
+                         f'{obj_label} ({pct(ret_obj_real)})'))
         if has_custom_weights and not np.isnan(vol_custom):
-            pts.append((vol_custom, ret_custom, '^', 150, '#ab47bc',
-                        f'Personalizada ({pct(ret_custom)})'))
-        for vp, rp, mk, sz, cl, lb in pts:
+            pts4.append((vol_custom, ret_custom, '^', 150, '#8e44ad',
+                         f'Personalizada ({pct(ret_custom)})'))
+        for vp, rp, mk, sz, cl, lb in pts4:
             ax.scatter(vp * 100, rp * 100, marker=mk, s=sz, color=cl,
                        zorder=10, edgecolors='white', linewidth=0.8, label=lb)
-        ax.axhline(rf * 100, color=BDI_MUTED, linewidth=0.6, linestyle=':',
-                   alpha=0.5, label=f'Rf={pct(rf)}')
+        ax.axhline(rf * 100, color=MUTED, linewidth=0.6, linestyle=':',
+                   alpha=0.6, label=f'Rf={pct(rf)}')
         xp = (sim_vol_arr.max() - sim_vol_arr.min()) * 100 * 0.12
         yp = (sim_ret_arr.max() - sim_ret_arr.min()) * 100 * 0.15
         ax.set_xlim(sim_vol_arr.min() * 100 - xp, sim_vol_arr.max() * 100 + xp)
         ax.set_ylim(sim_ret_arr.min() * 100 - yp, sim_ret_arr.max() * 100 + yp)
-        ax.set_title('Espacio de Portfolios — Modelo de Markowitz',
-                     fontsize=14, fontweight='bold', color=BDI_CREAM, pad=12)
-        ax.set_xlabel('Volatilidad Anual (%)', fontsize=11)
-        ax.set_ylabel('Retorno Anual (%)', fontsize=11)
+        ax.set_title('Espacio de Portafolios — Modelo de Markowitz',
+                     fontsize=14, fontweight='bold', color=DARK, pad=12)
+        ax.set_xlabel('Volatilidad Anual (%)', fontsize=11, color=DARK)
+        ax.set_ylabel('Retorno Anual (%)',     fontsize=11, color=DARK)
         ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax.legend(fontsize=9, framealpha=0.9, loc='upper left')
-        ax.grid(True, alpha=0.18)
-        _wmark(fig); plt.tight_layout()
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+        ax.legend(fontsize=9, framealpha=0.96, loc='upper left',
+                  facecolor=WHITE, edgecolor=BORDER)
+        ax.grid(True, alpha=0.28, color=BORDER)
+        _footer(fig)
+        plt.tight_layout(rect=[0, 0.04, 1, 1])
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 3 — COMPOSICIÓN (hasta 3 donuts por página)
+        # PAGINA 5 — COMPOSICION (donuts, fondo blanco)
         # ══════════════════════════════════════════════════════════════
         all_ports = list(portfolios.items())
         for bs in range(0, len(all_ports), 3):
             batch = all_ports[bs:bs + 3]
-            nb = len(batch)
+            nb    = len(batch)
             fig, axes_d = plt.subplots(1, nb, figsize=(AW, AH))
-            fig.patch.set_facecolor(BDI_DARK_BG)
+            fig.patch.set_facecolor(WHITE)
             if nb == 1:
                 axes_d = [axes_d]
+            port_keys = list(portfolios.keys())
             for ax, (name, w) in zip(axes_d, batch):
-                mask   = w > 0.005
-                lbs    = [assets[i] for i in range(num_assets) if mask[i]]
-                szs    = w[mask]
-                other  = 1 - szs.sum()
+                ax.set_facecolor(WHITE)
+                mask = w > 0.005
+                lbs  = [assets[i] for i in range(num_assets) if mask[i]]
+                szs  = w[mask]
+                other = 1 - szs.sum()
                 if other > 0.001:
                     lbs.append('Otros'); szs = np.append(szs, other)
                 cols_d = PALETTE[:len(lbs)]
@@ -499,200 +762,404 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                     szs, labels=None, colors=cols_d,
                     autopct=lambda p: f'{p:.1f}%' if p > 3 else '',
                     startangle=90, pctdistance=0.75,
-                    wedgeprops={'linewidth': 1.5, 'edgecolor': BDI_DARK_BG, 'width': 0.60},
+                    wedgeprops={'linewidth': 1.5, 'edgecolor': WHITE, 'width': 0.60},
                 )
                 for at in atxts:
-                    at.set_fontsize(9); at.set_color('white'); at.set_fontweight('bold')
-                m = metricas[name]
+                    at.set_fontsize(8.5); at.set_color(DARK); at.set_fontweight('bold')
+                m    = metricas[name]
+                pidx = port_keys.index(name) if name in port_keys else 0
+                c_p  = PCW[pidx % len(PCW)]
                 ax.text(0,  0.12, pct(m['Retorno Anual']),
-                        ha='center', va='center', fontsize=13, fontweight='bold', color=BDI_LIME)
-                ax.text(0, -0.15, f"Sharpe: {m['Sharpe Ratio']:.2f}",
-                        ha='center', va='center', fontsize=9, color=BDI_CREAM)
+                        ha='center', va='center', fontsize=13,
+                        fontweight='bold', color=c_p)
+                ax.text(0, -0.16, f"Sharpe: {m['Sharpe Ratio']:.2f}",
+                        ha='center', va='center', fontsize=9, color=DARK)
                 ax.text(0, -0.34, f"Vol: {pct(m['Volatilidad'])}",
-                        ha='center', va='center', fontsize=9, color=BDI_TEAL)
+                        ha='center', va='center', fontsize=9, color=MUTED)
                 ax.legend(wedges, [f"{lb} ({s*100:.1f}%)" for lb, s in zip(lbs, szs)],
-                          loc='lower center', bbox_to_anchor=(0.5, -0.38),
-                          fontsize=7, framealpha=0.6, ncol=2)
-                ax.set_title(name, fontsize=10, fontweight='bold', color=BDI_CREAM, pad=10)
-            fig.suptitle('Composición de Portfolios Óptimos',
-                         fontsize=13, fontweight='bold', color=BDI_CREAM, y=1.01)
-            _wmark(fig); plt.tight_layout()
-            pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+                          loc='lower center', bbox_to_anchor=(0.5, -0.40),
+                          fontsize=7, framealpha=0.95, ncol=2,
+                          facecolor=WHITE, edgecolor=BORDER)
+                ax.set_title(name, fontsize=10, fontweight='bold', color=c_p, pad=10)
+            fig.suptitle('Composicion de Portafolios Optimizados',
+                         fontsize=13, fontweight='bold', color=DARK, y=1.01)
+            _footer(fig)
+            plt.tight_layout()
+            pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
             plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 4 — RENDIMIENTO ACUMULADO
+        # PAGINA 6 — RENDIMIENTO ACUMULADO (fondo blanco)
         # ══════════════════════════════════════════════════════════════
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(AW, AH))
-        fig.patch.set_facecolor(BDI_DARK_BG)
+        fig.patch.set_facecolor(WHITE)
+        for ax_sub in [ax1, ax2]:
+            ax_sub.set_facecolor('#F8F9FA')
+            for sp in ax_sub.spines.values():
+                sp.set_color(BORDER)
+            ax_sub.tick_params(colors=DARK)
         for i, col in enumerate(cum_port.columns):
             ax1.plot(cum_port.index, cum_port[col] * 100,
-                     label=col, linewidth=2.0, color=PORT_COLORS[i % len(PORT_COLORS)])
-        ax1.axhline(0, color=BDI_MUTED, linewidth=0.5, linestyle='--', alpha=0.4)
-        ax1.set_title('Rendimiento Acumulado — Portfolios',
-                      fontsize=12, fontweight='bold', color=BDI_CREAM)
-        ax1.set_ylabel('Rend. Acumulado (%)', fontsize=10)
+                     label=col, linewidth=2.0, color=PCW[i % len(PCW)])
+        ax1.axhline(0, color=MUTED, linewidth=0.5, linestyle='--', alpha=0.5)
+        ax1.set_title('Rendimiento Acumulado — Portafolios',
+                      fontsize=12, fontweight='bold', color=DARK)
+        ax1.set_ylabel('Rend. Acumulado (%)', fontsize=10, color=DARK)
         ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax1.legend(fontsize=9, framealpha=0.85)
-        ax1.grid(True, alpha=0.18)
+        ax1.legend(fontsize=9, framealpha=0.96, facecolor=WHITE, edgecolor=BORDER)
+        ax1.grid(True, alpha=0.28, color=BORDER)
         for i, col in enumerate(cum_assets.columns):
             ax2.plot(cum_assets.index, cum_assets[col] * 100,
                      label=col, linewidth=1.5,
                      color=PALETTE[i % len(PALETTE)], alpha=0.85)
-        ax2.axhline(0, color=BDI_MUTED, linewidth=0.5, linestyle='--', alpha=0.4)
+        ax2.axhline(0, color=MUTED, linewidth=0.5, linestyle='--', alpha=0.5)
         ax2.set_title('Rendimiento Acumulado — Activos Individuales',
-                      fontsize=12, fontweight='bold', color=BDI_CREAM)
-        ax2.set_ylabel('Rend. Acumulado (%)', fontsize=10)
-        ax2.set_xlabel('Fecha', fontsize=10)
+                      fontsize=12, fontweight='bold', color=DARK)
+        ax2.set_ylabel('Rend. Acumulado (%)', fontsize=10, color=DARK)
+        ax2.set_xlabel('Fecha', fontsize=10, color=DARK)
         ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax2.legend(fontsize=8, framealpha=0.80,
+        ax2.legend(fontsize=8, framealpha=0.95, facecolor=WHITE, edgecolor=BORDER,
                    bbox_to_anchor=(1.01, 1), loc='upper left')
-        ax2.grid(True, alpha=0.18)
-        _wmark(fig); plt.tight_layout()
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+        ax2.grid(True, alpha=0.28, color=BORDER)
+        _footer(fig)
+        plt.tight_layout(rect=[0, 0.04, 1, 1])
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 5 — MÉTRICAS COMPARATIVAS
+        # PAGINA 7 — METRICAS COMPARATIVAS (barras, fondo blanco)
         # ══════════════════════════════════════════════════════════════
-        pn_p  = list(portfolios.keys())
-        mp_p  = [('Retorno Anual', 'Retorno Anual (%)', True),
-                 ('Volatilidad',   'Volatilidad (%)',   False),
-                 ('Sharpe Ratio',  'Sharpe Ratio',      True),
-                 ('Máx. Drawdown', 'Máx. Drawdown (%)', False)]
+        pn_p = list(portfolios.keys())
+        mp_p = [('Retorno Anual', 'Retorno Anual (%)', True),
+                ('Volatilidad',   'Volatilidad (%)',   False),
+                ('Sharpe Ratio',  'Ratio de Sharpe',   True),
+                ('Máx. Drawdown', 'Máx. Drawdown (%)', False)]
         fig, axes_m = plt.subplots(2, 2, figsize=(AW, AH))
-        fig.patch.set_facecolor(BDI_DARK_BG)
+        fig.patch.set_facecolor(WHITE)
         for ax, (col, ylabel, hb) in zip(axes_m.flatten(), mp_p):
+            ax.set_facecolor('#F8F9FA')
+            for sp in ax.spines.values():
+                sp.set_color(BORDER)
+            ax.tick_params(colors=DARK)
             vals = [metricas[p][col] for p in pn_p]
             sc   = 100 if '%' in ylabel else 1
             bars = ax.bar(pn_p, [v * sc for v in vals],
-                          color=PORT_COLORS[:len(pn_p)],
-                          edgecolor=BDI_DARK_BG, linewidth=1.0, width=0.5)
+                          color=PCW[:len(pn_p)],
+                          edgecolor=WHITE, linewidth=1.0, width=0.5)
             bidx = np.argmax(vals) if hb else np.argmin(vals)
-            bars[bidx].set_edgecolor(BDI_LIME); bars[bidx].set_linewidth(2.5)
+            bars[bidx].set_edgecolor(BDI_GREEN); bars[bidx].set_linewidth(2.5)
             for bar, val in zip(bars, vals):
                 lbl = f'{val*100:.1f}%' if '%' in ylabel else f'{val:.2f}'
                 ax.text(bar.get_x() + bar.get_width() / 2,
                         bar.get_height() + abs(bar.get_height()) * 0.03,
                         lbl, ha='center', va='bottom',
-                        fontsize=8, fontweight='bold', color=BDI_CREAM)
-            ax.set_title(ylabel, fontsize=11, fontweight='bold', color=BDI_CREAM)
+                        fontsize=8, fontweight='bold', color=DARK)
+            ax.set_title(ylabel, fontsize=11, fontweight='bold', color=DARK)
             if '%' in ylabel:
                 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-            ax.set_xticklabels(pn_p, rotation=15, ha='right', fontsize=8)
-            ax.grid(axis='y', alpha=0.18)
-        fig.suptitle('Comparación de Métricas — Portfolios Óptimos',
-                     fontsize=13, fontweight='bold', color=BDI_CREAM, y=1.01)
-        _wmark(fig); plt.tight_layout()
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+            ax.set_xticklabels(pn_p, rotation=15, ha='right', fontsize=8, color=DARK)
+            ax.grid(axis='y', alpha=0.28, color=BORDER)
+        fig.suptitle('Comparacion de Metricas — Portafolios Optimizados',
+                     fontsize=13, fontweight='bold', color=DARK, y=1.01)
+        _footer(fig)
+        plt.tight_layout(rect=[0, 0.04, 1, 1])
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 6 — CORRELACIÓN
+        # PAGINA 8 — CORRELACION (fondo blanco, colormap verde)
         # ══════════════════════════════════════════════════════════════
         fig, ax = plt.subplots(figsize=(max(7, num_assets + 2), max(6, num_assets + 1)))
-        fig.patch.set_facecolor(BDI_DARK_BG)
-        cmap_r = LinearSegmentedColormap.from_list(
-            'BDI_R',
-            ['#ffebee', '#ffcdd2', '#ef9a9a', '#e57373',
-             '#ef5350', '#e53935', '#c62828', '#b71c1c', '#7f0000'], N=256)
+        fig.patch.set_facecolor(WHITE)
+        cmap_g = LinearSegmentedColormap.from_list(
+            'BDI_G',
+            ['#ffffff', '#c8e6c9', '#81c784', '#4caf50',
+             '#2e7d32', '#1b5e20', '#137247'], N=256)
         sns.heatmap(corr_matrix, ax=ax, annot=True, fmt='.2f',
                     annot_kws={'size': 9, 'weight': 'bold'},
-                    cmap=cmap_r, vmin=0, vmax=1,
-                    linewidths=0.6, linecolor=BDI_DARK_BG, square=True,
-                    cbar_kws={'shrink': 0.8, 'label': 'Correlación', 'pad': 0.02})
+                    cmap=cmap_g, vmin=0, vmax=1,
+                    linewidths=0.6, linecolor=WHITE, square=True,
+                    cbar_kws={'shrink': 0.8, 'label': 'Correlacion', 'pad': 0.02})
         for to in ax.texts:
             try:
                 v = float(to.get_text())
-                to.set_color('#1c1c1c' if v < 0.55 else '#EFEDEA')
+                to.set_color(DARK if v < 0.60 else WHITE)
             except Exception:
                 pass
-        ax.set_title('Matriz de Correlación entre Activos',
-                     fontsize=13, fontweight='bold', color=BDI_CREAM, pad=12)
+        ax.set_title('Matriz de Correlacion entre Activos',
+                     fontsize=13, fontweight='bold', color=DARK, pad=12)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right',
-                           fontsize=9, color=BDI_CREAM)
+                           fontsize=9, color=DARK)
         ax.set_yticklabels(ax.get_yticklabels(), rotation=0,
-                           fontsize=9, color=BDI_CREAM)
-        _wmark(fig); plt.tight_layout()
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+                           fontsize=9, color=DARK)
+        _footer(fig)
+        plt.tight_layout(rect=[0, 0.04, 1, 1])
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 7 — CAGR COMPARATIVO
+        # PAGINA 9 — CAGR COMPARATIVO (fondo blanco)
         # ══════════════════════════════════════════════════════════════
         cagr_a  = {a: calc_cagr(cum_assets[a]) * 100 for a in assets}
         cagr_p  = {p: calc_cagr(cum_port[p])   * 100 for p in port_daily.columns}
         all_n   = list(cagr_a) + list(cagr_p)
         all_v   = list(cagr_a.values()) + list(cagr_p.values())
         all_ty  = (['Activo'] * len(cagr_a) +
-                   ['Personalizada' if p == 'Personalizada' else 'Portfolio'
+                   ['Personalizada' if p == 'Personalizada' else 'Portafolio'
                     for p in cagr_p])
-        tc      = {'Activo': BDI_TEAL, 'Portfolio': BDI_LIME, 'Personalizada': '#ab47bc'}
+        tc_w    = {'Activo': BDI_TEAL, 'Portafolio': BDI_GREEN, 'Personalizada': '#8e44ad'}
         sd      = sorted(zip(all_v, all_n, all_ty), reverse=True)
         sv, sn, sty = zip(*sd)
         fig, ax = plt.subplots(figsize=(max(9, len(all_n) * 1.1), AH))
-        fig.patch.set_facecolor(BDI_DARK_BG)
-        bars_c = ax.bar(sn, sv, color=[tc.get(t, BDI_MUTED) for t in sty],
-                        edgecolor=BDI_DARK_BG, linewidth=1.0, width=0.6)
+        fig.patch.set_facecolor(WHITE)
+        ax.set_facecolor('#F8F9FA')
+        for sp in ax.spines.values():
+            sp.set_color(BORDER)
+        ax.tick_params(colors=DARK)
+        bars_c = ax.bar(sn, sv, color=[tc_w.get(t, MUTED) for t in sty],
+                        edgecolor=WHITE, linewidth=1.0, width=0.6)
         for bar, val in zip(bars_c, sv):
             ax.text(bar.get_x() + bar.get_width() / 2,
                     val + (0.4 if val >= 0 else -1.2),
                     f'{val:.1f}%', ha='center', va='bottom',
-                    fontsize=8, fontweight='bold', color=BDI_CREAM)
-        ax.axhline(0, color=BDI_MUTED, linewidth=0.7, linestyle='--', alpha=0.5)
-        ax.set_title('CAGR Anual Comparativo — Activos y Portfolios',
-                     fontsize=13, fontweight='bold', color=BDI_CREAM, pad=10)
-        ax.set_ylabel('CAGR Anual (%)', fontsize=10)
+                    fontsize=8, fontweight='bold', color=DARK)
+        ax.axhline(0, color=MUTED, linewidth=0.7, linestyle='--', alpha=0.5)
+        ax.set_title('CAGR Anual Comparativo — Activos y Portafolios',
+                     fontsize=13, fontweight='bold', color=DARK, pad=10)
+        ax.set_ylabel('CAGR Anual (%)', fontsize=10, color=DARK)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax.set_xticklabels(sn, rotation=30, ha='right', fontsize=9)
-        ax.grid(axis='y', alpha=0.18)
-        ax.legend(handles=[mpatches.Patch(color=c, label=t) for t, c in tc.items()],
-                  fontsize=9, framealpha=0.85)
-        _wmark(fig); plt.tight_layout()
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+        ax.set_xticklabels(sn, rotation=30, ha='right', fontsize=9, color=DARK)
+        ax.grid(axis='y', alpha=0.28, color=BORDER)
+        ax.legend(handles=[mpatches.Patch(color=c, label=t) for t, c in tc_w.items()],
+                  fontsize=9, framealpha=0.96, facecolor=WHITE, edgecolor=BORDER)
+        _footer(fig)
+        plt.tight_layout(rect=[0, 0.04, 1, 1])
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PÁGINA 8 — AVISO LEGAL (portrait A4)
+        # PAGINA 10 — MODULO EDUCATIVO (Portrait A4) — 8 conceptos
+        # ══════════════════════════════════════════════════════════════
+        EDU = [
+            {
+                'title': '1. Teoria Moderna de Portafolios (Markowitz, 1952)',
+                'color': BDI_GREEN,
+                'text':  ('Harry Markowitz demostro que es posible construir portafolios que '
+                          'maximizan el retorno esperado para cada nivel de riesgo dado. La '
+                          'clave: los activos se evaluan por su aporte al riesgo total del '
+                          'portafolio, no de forma aislada. Esta teoria es la base de la '
+                          'optimizacion cuantitativa moderna.'),
+                'formula': 'min w\'Sw  sujeto a  w\'mu = mu_objetivo,  sum(w) = 1',
+                'fdetail': 'w: pesos   S: matriz de covarianza   mu: retornos esperados',
+            },
+            {
+                'title': '2. La Frontera Eficiente',
+                'color': BDI_TEAL,
+                'text':  ('Conjunto de portafolios que ofrecen el maximo retorno posible para '
+                          'cada nivel de riesgo, o el minimo riesgo para cada nivel de retorno. '
+                          'Cualquier portafolio por debajo de la frontera es suboptimo: existe '
+                          'otro con igual retorno y menor riesgo.'),
+                'formula': 'FE = { (sigma_p, mu_p) | no existe p\' con mu_p\' >= mu_p y sigma_p\' < sigma_p }',
+                'fdetail': 'sigma_p: vol del portafolio   mu_p: retorno esperado del portafolio',
+            },
+            {
+                'title': '3. Diversificacion y Reduccion del Riesgo',
+                'color': '#6e9900',
+                'text':  ('Combinar activos no correlacionados reduce el riesgo total sin '
+                          'sacrificar retorno. El "milagro" de la diversificacion: el riesgo '
+                          'del portafolio puede ser menor que el promedio de riesgos individuales '
+                          'si los activos no se mueven en perfecta sincronia.'),
+                'formula': 'sigma_p^2 = sum_i sum_j wi*wj*sigma_ij',
+                'fdetail': 'sigma_ij: covarianza entre activos i y j   wi, wj: pesos respectivos',
+            },
+            {
+                'title': '4. Correlacion entre Activos',
+                'color': '#e88c00',
+                'text':  ('La correlacion mide como se mueven dos activos entre si. Valores '
+                          'cercanos a +1: se mueven juntos (poca diversificacion). Valores '
+                          'cercanos a -1: se mueven opuesto (maxima diversificacion). El objetivo '
+                          'es combinar activos con baja correlacion entre si.'),
+                'formula': 'rho_ij = sigma_ij / (sigma_i * sigma_j)',
+                'fdetail': 'rho_ij: correlacion   sigma_ij: covarianza   sigma_i, sigma_j: volatilidades',
+            },
+            {
+                'title': '5. Ratio de Sharpe y Linea de Mercado de Capitales (CML)',
+                'color': BDI_GREEN,
+                'text':  ('La CML conecta el activo libre de riesgo con el portafolio de maximo '
+                          'Sharpe. Todo inversor racional elegira un punto sobre esta linea, '
+                          'combinando el activo libre de riesgo con el portafolio de mercado '
+                          'segun su tolerancia al riesgo.'),
+                'formula': 'E[Rp] = Rf + Sharpe * sigma_p',
+                'fdetail': 'E[Rp]: retorno esperado   Rf: tasa libre de riesgo   sigma_p: volatilidad objetivo',
+            },
+            {
+                'title': '6. CAGR vs. Retorno Aritmetico',
+                'color': BDI_TEAL,
+                'text':  ('El retorno aritmetico promedia las ganancias y perdidas anuales. '
+                          'El CAGR mide el crecimiento real compuesto: cuanto multiplico el '
+                          'capital. Para periodos largos, el CAGR siempre es menor o igual al '
+                          'retorno aritmetico; la diferencia crece con la volatilidad.'),
+                'formula': 'CAGR aprox. = mu_aritmetico - sigma^2 / 2',
+                'fdetail': 'mu: retorno medio aritmetico   sigma^2: varianza anual del portafolio',
+            },
+            {
+                'title': '7. Drawdown y Recuperacion',
+                'color': '#c0392b',
+                'text':  ('El drawdown es la perdida desde un pico. Su importancia radica en '
+                          'el tiempo de recuperacion: una caida del 50% requiere un rebote del '
+                          '100% para volver al punto de partida. Portafolios con menor drawdown '
+                          'son mas resilientes y psicologicamente mas sostenibles.'),
+                'formula': 'Recuperacion necesaria = 1 / (1 + MaxDD) - 1',
+                'fdetail': 'MaxDD = -0.50 implica necesitar +100% para recuperar el capital',
+            },
+            {
+                'title': '8. Rebalanceo Periodico',
+                'color': '#8e44ad',
+                'text':  ('Con el tiempo, los activos crecen distinto desviando los pesos del '
+                          'objetivo original. Rebalancear implica vender lo que subio y comprar '
+                          'lo que bajo para volver a la asignacion deseada. En mercados volatiles, '
+                          'el rebalanceo puede mejorar el retorno de largo plazo.'),
+                'formula': 'w_actual_i = V_i / sum_j V_j   =>   delta_i = w_objetivo_i - w_actual_i',
+                'fdetail': 'V_i: valor actual del activo i   delta_i: ajuste necesario en el peso',
+            },
+        ]
+
+        # 4 cards por pagina, 2 paginas total
+        EDU_H   = 0.192
+        EDU_GAP = 0.018
+        EDU_MARGIN = 0.05
+
+        for page_e in range(2):
+            fig = plt.figure(figsize=(8.27, 11.69))
+            fig.patch.set_facecolor(WHITE)
+
+            # Header de la pagina educativa
+            ax_edu_hdr = fig.add_axes([0, 0.92, 1, 0.08])
+            ax_edu_hdr.set_facecolor(BDI_TEAL)
+            ax_edu_hdr.set_xlim(0, 1); ax_edu_hdr.set_ylim(0, 1)
+            ax_edu_hdr.axis('off')
+            page_label = f'Modulo Educativo  —  Parte {page_e + 1} de 2'
+            ax_edu_hdr.text(0.05, 0.72, page_label, fontsize=13, fontweight='bold',
+                            color=WHITE, va='top')
+            ax_edu_hdr.text(0.05, 0.28, 'Conceptos, formulas y principios de la inversion cuantitativa',
+                            fontsize=8.5, color=BDI_LIME, va='top', fontweight='bold')
+
+            cards_this = EDU[page_e * 4: page_e * 4 + 4]
+            E_START = 0.91
+
+            for idx_e, card_e in enumerate(cards_this):
+                cy_e = E_START - (idx_e + 1) * EDU_H - idx_e * EDU_GAP
+                ax_e = fig.add_axes([EDU_MARGIN, cy_e, 1 - 2 * EDU_MARGIN, EDU_H])
+                _card_bg(ax_e, '#FAFAFA')
+                _ax_off(ax_e, '#FAFAFA')
+                _left_border(ax_e, card_e['color'], 0.010)
+
+                ax_e.text(0.025, 0.93, card_e['title'], fontsize=9.5, fontweight='bold',
+                          color=card_e['color'], va='top', transform=ax_e.transAxes)
+                wrapped_e = textwrap.fill(card_e['text'], width=90)
+                ax_e.text(0.025, 0.72, wrapped_e, fontsize=7.8, color=DARK,
+                          va='top', transform=ax_e.transAxes, linespacing=1.42)
+                # Formula box
+                ax_e.add_patch(mpatches.Rectangle(
+                    (0.025, 0.00), 0.95, 0.22, transform=ax_e.transAxes,
+                    facecolor=LIGHT, edgecolor='none'))
+                ax_e.text(0.040, 0.195, card_e['formula'], fontsize=7.8,
+                          color=card_e['color'], va='top', transform=ax_e.transAxes,
+                          fontfamily='monospace', fontweight='bold')
+                ax_e.text(0.040, 0.085, card_e['fdetail'], fontsize=7,
+                          color=MUTED, va='top', transform=ax_e.transAxes)
+
+            _footer(fig)
+            pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
+            plt.close(fig)
+
+        # ══════════════════════════════════════════════════════════════
+        # PAGINA 12 — DISCLAIMER (Portrait A4)
         # ══════════════════════════════════════════════════════════════
         fig = plt.figure(figsize=(8.27, 11.69))
-        fig.patch.set_facecolor(BDI_DARK_BG)
-        ax_d = fig.add_axes([0.08, 0.28, 0.84, 0.52])
-        ax_d.set_facecolor(BDI_CARD_BG)
-        for sp in ax_d.spines.values():
-            sp.set_edgecolor('#ffa000'); sp.set_linewidth(1.5)
-        ax_d.axis('off')
-        fig.text(0.5, 0.84, '⚠️  ADVERTENCIA LEGAL',
-                 ha='center', fontsize=16, fontweight='bold', color='#ffa000')
-        lines_d = [
-            'Este análisis es de carácter exclusivamente informativo y educativo.',
-            'No constituye asesoramiento financiero ni una recomendación de inversión.',
-            'Los rendimientos pasados no garantizan resultados futuros.',
-            '',
-            'Las proyecciones y simulaciones presentadas tienen fines únicamente',
-            'ilustrativos y están basadas en datos históricos de acceso público.',
-            '',
-            'Toda decisión de inversión debe tomarse con asesoramiento',
-            'profesional apropiado y considerando el perfil de riesgo individual.',
+        fig.patch.set_facecolor(WHITE)
+
+        # Header rojo disclaimer
+        ax_dh = fig.add_axes([0.06, 0.86, 0.88, 0.10])
+        _card_bg(ax_dh, LIGHT)
+        _ax_off(ax_dh, LIGHT)
+        ax_dh.add_patch(mpatches.Rectangle(
+            (0, 0), 0.007, 1, transform=ax_dh.transAxes,
+            facecolor='#c0392b', edgecolor='none'))
+        ax_dh.text(0.030, 0.74, 'Aviso Legal y Disclaimer', fontsize=14,
+                   fontweight='bold', color=DARK, va='top', transform=ax_dh.transAxes)
+        ax_dh.text(0.030, 0.28, ('Este informe fue generado automaticamente y tiene caracter '
+                                 'exclusivamente informativo y educativo.'),
+                   fontsize=8.5, color=MUTED, va='top', transform=ax_dh.transAxes)
+
+        # Bloques de disclaimer
+        DISC_ITEMS = [
+            ('No constituye asesoramiento financiero',
+             'Este informe no constituye ni debe interpretarse como asesoramiento financiero, '
+             'de inversion, legal, impositivo ni de ninguna otra naturaleza profesional. '
+             'La informacion presentada tiene fines unicamente informativos y educativos. '
+             'BDI Consultora no tiene relacion de mandato ni gestion de activos con el usuario.'),
+            ('Rendimientos pasados no garantizan resultados futuros',
+             'Las proyecciones, simulaciones y analisis historicos presentados no constituyen '
+             'garantia de rendimiento futuro. Los mercados financieros son dinamicos y estan '
+             'sujetos a factores macroeconomicos, politicos y de liquidez impredecibles '
+             'que pueden afectar significativamente los resultados reales.'),
+            ('Riesgo de perdida de capital',
+             'Toda inversion en mercados financieros conlleva riesgos, incluyendo la posible '
+             'perdida parcial o total del capital invertido. El inversor debe evaluar '
+             'cuidadosamente su tolerancia al riesgo, su horizonte temporal y su situacion '
+             'patrimonial antes de tomar cualquier decision de inversion.'),
+            ('Precision de los datos',
+             'Los datos historicos utilizados provienen de fuentes publicas (Yahoo Finance u '
+             'otras) y pueden contener inexactitudes, ajustes por dividendos o splits no '
+             'reflejados. BDI Consultora no se responsabiliza por errores en los datos '
+             'fuente ni por las consecuencias de decisiones basadas en este analisis.'),
+            ('Consulte con un asesor certificado',
+             'Antes de tomar cualquier decision de inversion, se recomienda consultar con '
+             'un asesor financiero certificado que conozca su situacion patrimonial, fiscal '
+             'y sus objetivos financieros personales. Este informe no reemplaza el '
+             'asesoramiento profesional individualizado.'),
         ]
-        yld = 0.88
-        for line in lines_d:
-            ax_d.text(0.5, yld, line, ha='center', va='top', fontsize=10,
-                      color=BDI_CREAM, transform=ax_d.transAxes)
-            yld -= 0.10
-        ax_d.text(0.5, 0.08,
-                  'BDI Consultora de Inversiones  ·  bdiconsultora@gmail.com  ·  Mariano Ricciardi',
-                  ha='center', va='top', fontsize=10, fontweight='bold',
-                  color=BDI_TEAL, transform=ax_d.transAxes)
-        fig.text(0.5, 0.10, f'Reporte generado: {fecha_hoy}',
-                 ha='center', fontsize=9, color=BDI_MUTED)
-        pdf.savefig(fig, facecolor=BDI_DARK_BG, bbox_inches='tight')
+
+        D_START = 0.85
+        D_H     = 0.130
+        D_GAP   = 0.018
+
+        for idx_d, (title_d, body_d) in enumerate(DISC_ITEMS):
+            cy_d = D_START - (idx_d + 1) * D_H - idx_d * D_GAP
+            ax_di = fig.add_axes([0.06, cy_d, 0.88, D_H])
+            _card_bg(ax_di, '#FAFAFA')
+            _ax_off(ax_di, '#FAFAFA')
+            _left_border(ax_di, '#c0392b', 0.010)
+
+            ax_di.text(0.025, 0.90, title_d, fontsize=8.5, fontweight='bold',
+                       color=DARK, va='top', transform=ax_di.transAxes)
+            wrapped_d = textwrap.fill(body_d, width=90)
+            ax_di.text(0.025, 0.68, wrapped_d, fontsize=7.5, color=MUTED,
+                       va='top', transform=ax_di.transAxes, linespacing=1.42)
+
+        # BDI contact block
+        ax_bdi = fig.add_axes([0.06, 0.04, 0.88, 0.14])
+        ax_bdi.set_facecolor(BDI_GREEN)
+        ax_bdi.set_xlim(0, 1); ax_bdi.set_ylim(0, 1)
+        ax_bdi.axis('off')
+        ax_bdi.text(0.05, 0.80, 'BDI Consultora de Inversiones',
+                    fontsize=13, fontweight='bold', color=WHITE, va='top',
+                    transform=ax_bdi.transAxes)
+        ax_bdi.text(0.05, 0.50, 'hola@bdiconsultora.com',
+                    fontsize=10, color=BDI_LIME, va='top', transform=ax_bdi.transAxes)
+        ax_bdi.text(0.05, 0.22, f'Informe generado el {fecha_hoy}  —  BDI Optimizador de Carteras v2.0',
+                    fontsize=7.5, color=WHITE, alpha=0.80, va='top',
+                    transform=ax_bdi.transAxes)
+
+        _footer(fig)
+        pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
         plt.close(fig)
 
         # Metadata del PDF
         d = pdf.infodict()
-        d['Title']   = 'BDI — Análisis y Optimización de Cartera'
-        d['Author']  = 'BDI Consultora de Inversiones — Mariano Ricciardi'
+        d['Title']   = 'BDI — Analisis y Optimizacion de Cartera'
+        d['Author']  = 'BDI Consultora de Inversiones'
         d['Subject'] = f'Portafolio: {", ".join(assets)}'
         d['Creator'] = 'BDI Optimizador de Carteras v2.0'
 
@@ -1197,7 +1664,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
 
         for i, (vol_p, ret_p, marker, sz, color, label) in enumerate(portfolios_plot):
             ax.scatter(vol_p * 100, ret_p * 100,
-                        marker=marker, s=sz, color=color, zorder=10,
+                       marker=marker, s=sz, color=color, zorder=10,
                        edgecolors='white', linewidth=1.2)
             # Anotación con flecha
             x_off = x_range * 0.05 * (1 if i % 2 == 0 else -1)
@@ -1222,7 +1689,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         ax.set_xlim(sim_vol_arr.min() * 100 - x_pad, sim_vol_arr.max() * 100 + x_pad)
         ax.set_ylim(sim_ret_arr.min() * 100 - y_pad, sim_ret_arr.max() * 100 + y_pad)
 
-        ax.set_title('Espacio de Portfolios ‒ Modelo de Markowitz',
+        ax.set_title('Espacio de Portfolios — Modelo de Markowitz',
                      fontsize=16, fontweight='bold', color=BDI_CREAM, pad=16)
         ax.set_xlabel('Volatilidad Anual (%)', fontsize=12, labelpad=10)
         ax.set_ylabel('Retorno Anual (%)', fontsize=12, labelpad=10)
@@ -1270,7 +1737,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 wedgeprops={'linewidth': 2, 'edgecolor': BDI_DARK_BG, 'width': 0.62},
             )
             for at in autotexts:
-                at.set_fontsize(12)     # agrandado de 8 → 12
+                at.set_fontsize(12)      # agrandado de 8 → 12
                 at.set_color('white')
                 at.set_fontweight('bold')
 
@@ -1326,7 +1793,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
             ax.annotate(f' {val:.1f}%', xy=(cum_port.index[-1], val),
                         fontsize=9, color=PORT_COLORS[i % len(PORT_COLORS)],
                         va='center', fontweight='bold')
-        ax.set_title('Rendimiento Acumulado ‒ PortFolios Óptimos',
+        ax.set_title('Rendimiento Acumulado — Portfolios Óptimos',
                      fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
@@ -1344,7 +1811,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         <div class="info-box">
             <strong style="color:#B5E61D;">📈 Rendimiento acumulado por activo individual</strong><br/>
             Visualizá cómo se desempeñó cada activo de forma independiente durante el período analizado.
-            Esto permite identificar que instrumentos lideraron el crecimiento, cuáles tuvieron mayor
+            Esto permite identificar qué instrumentos lideraron el crecimiento, cuáles tuvieron mayor
             volatilidad y cómo interactuaron entre sí. La diversificación busca combinarlos para suavizar
             las caídas sin sacrificar retorno.
         </div>
@@ -1365,7 +1832,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 color=PALETTE[list(cum_assets.columns).index(col) % len(PALETTE)],
                 va='center',
             )
-        ax.set_title('Rendimiento Acumulado ‒ Activos Individuales',
+        ax.set_title('Rendimiento Acumulado — Activos Individuales',
                      fontsize=15, fontweight='bold', color=BDI_CREAM, pad=12)
         ax.set_xlabel('Fecha', fontsize=11, labelpad=8)
         ax.set_ylabel('Rendimiento Acumulado (%)', fontsize=11, labelpad=8)
@@ -1579,7 +2046,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
             st.markdown("""
             **Frontera Eficiente:** Conjunto de portfolios que maximizan el retorno esperado
             para cada nivel de riesgo. Todo portfolio *debajo* o *a la derecha* de la frontera es subóptimo
-            — existe un portfolio mejor con el mismo riesgo o menor riesgo con igual retorno.
+            — existe un portfolio mejor con el mismo riesgo o menos riesgo con igual retorno.
 
             **Problema de optimización (mínima volatilidad para retorno objetivo $R^*$):**
             """)
@@ -1711,7 +2178,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 """, unsafe_allow_html=True)
             st.markdown("""
             <div class="legal-warning" style="margin-top:1rem;">
-                ⚠️ <strong>Limitación del modelo:</strong> Markowitz se basa en retornos históricos y
+                ⚠️ <strong>Limitación del modelo;</strong> Markowitz se basa en retornos históricos y
                 asume que las correlaciones son estables. En períodos de crisis, las correlaciones
                 aumentan (los activos "caen juntos"), reduciendo el beneficio de la diversificación
                 exactamente cuando más se necesita. Usá estos resultados como guía, no como verdad absoluta.
