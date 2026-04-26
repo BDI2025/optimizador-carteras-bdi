@@ -211,7 +211,7 @@ st.markdown("""
 
     /* Banner header */
     .bdi-header {
-        background: linear-gradient(135deg, #0d4d2e 0%, #137247 50%, #0e4a5a 100%);
+        background: linear-gradient(135deg, #0d2e1e 0%, #137247 50%, #0e4a5a 100%);
         border: 1px solid #17BEBB;
         border-radius: 14px;
         padding: 2rem 2.4rem;
@@ -402,30 +402,32 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         fig = plt.figure(figsize=(8.27, 11.69))
         fig.patch.set_facecolor(WHITE)
 
-        # Header gradient verde → teal — más alto, incluye el título
-        ax_h = fig.add_axes([0, 0.72, 1, 0.28])
+        # Header gradient verde → teal
+        ax_h = fig.add_axes([0, 0.80, 1, 0.20])
         ax_h.set_xlim(0, 1); ax_h.set_ylim(0, 1)
         cmap_gt = LinearSegmentedColormap.from_list('gt', [BDI_GREEN, BDI_TEAL])
         ax_h.imshow(np.linspace(0, 1, 256).reshape(1, -1),
                     aspect='auto', cmap=cmap_gt, extent=[0, 1, 0, 1], zorder=0)
         ax_h.axis('off')
-        # Logo BDI (parte superior izquierda del header)
-        ax_h.text(0.06, 0.97, 'BDI', fontsize=34, fontweight='bold',
+        ax_h.text(0.06, 0.78, 'BDI', fontsize=46, fontweight='bold',
                   color=WHITE, va='top')
-        ax_h.text(0.06, 0.76, 'CONSULTORA DE INVERSIONES', fontsize=8.5,
+        ax_h.text(0.06, 0.44, 'CONSULTORA DE INVERSIONES', fontsize=9.5,
                   color=BDI_LIME, va='top', fontweight='bold')
-        ax_h.text(0.06, 0.64, 'hola@bdiconsultora.com', fontsize=7.5,
+        ax_h.text(0.06, 0.17, 'hola@bdiconsultora.com', fontsize=8.5,
                   color=WHITE, va='top', alpha=0.90)
-        # Separador horizontal
-        ax_h.axhline(0.54, color=WHITE, linewidth=0.6, alpha=0.35, xmin=0.05, xmax=0.95)
-        # Título dentro del header (fondo verde)
-        ax_h.text(0.06, 0.48, 'Informe de Optimizacion de Portafolio de Inversiones',
-                  fontsize=18, fontweight='bold', color=WHITE, va='top')
-        ax_h.text(0.06, 0.23, 'Modelo de Markowitz con Frontera Eficiente',
-                  fontsize=10, color=BDI_LIME, va='top', alpha=0.95, fontstyle='italic')
 
-        # Info box — ajustado al nuevo header
-        ax_i = fig.add_axes([0.06, 0.37, 0.88, 0.33])
+        # Titulo
+        ax_ti = fig.add_axes([0.06, 0.62, 0.88, 0.17])
+        _ax_off(ax_ti)
+        ax_ti.text(0, 0.88, 'Informe de Optimizacion', fontsize=21,
+                   fontweight='bold', color=DARK, va='top', transform=ax_ti.transAxes)
+        ax_ti.text(0, 0.55, 'de Portafolio de Inversiones', fontsize=21,
+                   fontweight='bold', color=DARK, va='top', transform=ax_ti.transAxes)
+        ax_ti.text(0, 0.18, 'Modelo de Markowitz con Frontera Eficiente',
+                   fontsize=10.5, color=MUTED, va='top', transform=ax_ti.transAxes)
+
+        # Info box
+        ax_i = fig.add_axes([0.06, 0.38, 0.88, 0.22])
         _card_bg(ax_i, LIGHT)
         _ax_off(ax_i, LIGHT)
         _left_border(ax_i, BDI_GREEN, 0.009)
@@ -496,9 +498,9 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         PORT_INFO = {
             'Min. Volatilidad':  ('Min. Volatilidad',  BDI_TEAL,    'Conservador',   '#E0F7FA', '#004D55'),
             'Mín. Volatilidad':  ('Mín. Volatilidad',  BDI_TEAL,    'Conservador',   '#E0F7FA', '#004D55'),
-            'Máx. Sharpe':       ('Máx. Sharpe',       BDI_GREEN,   'Arriesgado',    '#E8F5E9', '#1B5E20'),
-            'Max. Sharpe':       ('Max. Sharpe',        BDI_GREEN,   'Arriesgado',    '#E8F5E9', '#1B5E20'),
-            'Equiponderado':     ('Equiponderado',      '#6e9900',   'Moderado',      '#F1F8E9', '#2E5500'),
+            'Máx. Sharpe':       ('Máx. Sharpe',       BDI_GREEN,   'Moderado',      '#E8F5E9', '#1B5E20'),
+            'Max. Sharpe':       ('Max. Sharpe',        BDI_GREEN,   'Moderado',      '#E8F5E9', '#1B5E20'),
+            'Equiponderado':     ('Equiponderado',      '#6e9900',   'Diversificado', '#F1F8E9', '#2E5500'),
             'Personalizada':     ('Personalizada',      '#8e44ad',   'A medida',      '#F3E5F5', '#4A148C'),
         }
         GENERIC_PORT = ('Objetivo',    '#e88c00',   'Objetivo',    '#FFF8E1', '#7B3A00')
@@ -510,17 +512,17 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                 'esperado. Ideal para quienes priorizan la proteccion del capital y tienen '
                 'baja tolerancia a la volatilidad.'
             ),
-            'Arriesgado':    (
+            'Moderado':      (
                 'Maximiza el Ratio de Sharpe, es decir, el retorno adicional por unidad de '
                 'riesgo asumida. Es la cartera mas eficiente segun la Teoria Moderna de '
-                'Portafolios. Recomendada para inversores con alta tolerancia al riesgo '
-                'que buscan el maximo crecimiento en el largo plazo.'
+                'Portafolios. Recomendada para inversores que buscan crecimiento sostenido '
+                'con riesgo controlado y horizonte de mediano plazo.'
             ),
-            'Moderado':      (
-                'Asigna el mismo peso a cada activo sin ninguna optimizacion matematica: '
-                'si hay 6 activos, cada uno recibe exactamente el 16.7% del portafolio. '
-                'Estrategia simple, robusta y transparente. Ideal para perfiles moderados '
-                'que buscan diversificacion sin concentrar en ningun activo particular.'
+            'Diversificado': (
+                'Asigna igual peso a cada activo sin ninguna optimizacion matematica. '
+                'Estrategia simple, robusta y transparente que garantiza diversificacion '
+                'absoluta. Sirve como punto de comparacion neutral y es apropiada para '
+                'quienes prefieren simplicidad sin concentrar en ningun activo.'
             ),
             'A medida':      (
                 'Distribucion definida directamente por el usuario, reflejando sus '
@@ -536,12 +538,11 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         }
 
         port_list = list(portfolios.keys())
-        # Layout vertical — 4 cards apiladas una debajo de la otra
-        CARD_H   = 0.195
-        CARD_GAP = 0.018
+        # 2 columnas x 2 filas — cada card 42% ancho, 36% alto
+        CW, CH   = 0.42, 0.36
+        GAP_X    = 0.04
         MARGIN_L = 0.05
-        CARD_W   = 0.90
-        START_Y  = 0.905
+        START_Y  = 0.88
 
         for idx, pname in enumerate(port_list[:4]):
             info_t = PORT_INFO.get(pname, None)
@@ -550,31 +551,32 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
             else:
                 _, pc, profile, bb, bf = GENERIC_PORT
             desc = DESC_PORT.get(profile, DESC_PORT['Objetivo'])
-            cy   = START_Y - (idx + 1) * CARD_H - idx * CARD_GAP
+            col  = idx % 2
+            row  = idx // 2
+            cx   = MARGIN_L + col * (CW + GAP_X + MARGIN_L * 0.5)
+            cy   = START_Y - (row + 1) * CH - row * 0.035
 
-            ax_c = fig.add_axes([MARGIN_L, cy, CARD_W, CARD_H])
+            ax_c = fig.add_axes([cx, cy, CW, CH])
             _card_bg(ax_c, '#FAFAFA')
             _ax_off(ax_c, '#FAFAFA')
-            _left_border(ax_c, pc, 0.012)
+            _left_border(ax_c, pc, 0.022)
 
-            # Nombre + badge de perfil en la misma línea
-            ax_c.text(0.030, 0.88, pname, fontsize=10.5, fontweight='bold',
+            ax_c.text(0.055, 0.93, pname, fontsize=11, fontweight='bold',
                       color=pc, va='top', transform=ax_c.transAxes)
-            ax_c.text(0.300, 0.88, f'  Perfil: {profile}', fontsize=8,
+            ax_c.text(0.055, 0.76, f'Perfil: {profile}', fontsize=7.5,
                       fontweight='bold', color=bf, va='top',
                       transform=ax_c.transAxes,
                       bbox=dict(boxstyle='round,pad=0.28', facecolor=bb, edgecolor='none'))
-            wrapped = textwrap.fill(desc, width=105)
-            ax_c.text(0.030, 0.65, wrapped, fontsize=8, color=DARK,
-                      va='top', transform=ax_c.transAxes, linespacing=1.42)
+            wrapped = textwrap.fill(desc, width=48)
+            ax_c.text(0.055, 0.60, wrapped, fontsize=7.5, color=DARK,
+                      va='top', transform=ax_c.transAxes, linespacing=1.45)
 
             m = metricas.get(pname)
             if m:
-                note = (f"Retorno anual: {pct(m['Retorno Anual'])}   |   "
-                        f"Volatilidad: {pct(m['Volatilidad'])}   |   "
-                        f"Sharpe: {m['Sharpe Ratio']:.2f}   |   "
-                        f"CAGR: {pct(m['CAGR'])}")
-                ax_c.text(0.030, 0.09, note, fontsize=7.5, color=MUTED,
+                note = (f"Retorno: {pct(m['Retorno Anual'])}   "
+                        f"Vol: {pct(m['Volatilidad'])}   "
+                        f"Sharpe: {m['Sharpe Ratio']:.2f}")
+                ax_c.text(0.055, 0.06, note, fontsize=7.5, color=MUTED,
                           va='bottom', transform=ax_c.transAxes,
                           style='italic')
 
@@ -603,8 +605,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                             'usando la tasa libre de riesgo como referencia. Un Sharpe mayor a 1 '
                             'es bueno; mayor a 2 se considera excelente. Permite comparar '
                             'portafolios con distintos niveles de riesgo en igualdad de condiciones.'),
-                'formula': r'$S = \dfrac{R_p - R_f}{\sigma_p}$',
-                'fdetail': r'$R_p$: retorno portafolio   $R_f$: tasa libre de riesgo   $\sigma_p$: volatilidad del portafolio',
+                'formula': 'Sharpe = (Rp - Rf) / sigma_p',
+                'fdetail': 'Rp: retorno portafolio   Rf: tasa libre de riesgo   sigma_p: volatilidad',
             },
             {
                 'name':    'CAGR — Tasa de Crecimiento Anual Compuesta',
@@ -615,8 +617,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                             'el periodo analizado. A diferencia del retorno simple, el CAGR '
                             'considera el efecto del interes compuesto, reflejando el verdadero '
                             'crecimiento anualizado de la inversion inicial.'),
-                'formula': r'$CAGR = \left(\dfrac{V_f}{V_i}\right)^{1/n} - 1$',
-                'fdetail': r'$V_f$: valor final   $V_i$: valor inicial   $n$: años del periodo',
+                'formula': 'CAGR = (Vf / Vi)^(1/n) - 1',
+                'fdetail': 'Vf: valor final   Vi: valor inicial   n: años del periodo',
             },
             {
                 'name':    'Volatilidad Anual',
@@ -627,8 +629,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                             'la incertidumbre o variacion esperada en el valor del portafolio. '
                             'A mayor volatilidad, mayor incertidumbre sobre los resultados '
                             'futuros. Los portafolios conservadores buscan minimizar este valor.'),
-                'formula': r'$\sigma_{anual} = \sigma_{diaria} \times \sqrt{252}$',
-                'fdetail': r'$\sigma_{diaria}$: desvio estandar de retornos diarios   $252$: dias habiles por año',
+                'formula': 'sigma_anual = sigma_diaria x sqrt(252)',
+                'fdetail': 'sigma_diaria: desvio estandar de retornos diarios   252: dias habiles/año',
             },
             {
                 'name':    'Maximo Drawdown',
@@ -639,8 +641,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                             'punto mas bajo dentro del periodo analizado. Es el indicador clave '
                             'para evaluar la resistencia de un portafolio ante crisis o '
                             'correcciones de mercado. Un drawdown menor implica mayor proteccion.'),
-                'formula': r'$MaxDD = \dfrac{Valle - Pico}{Pico}$',
-                'fdetail': r'$Valle$: valor minimo posterior al pico   $Pico$: maximo historico previo',
+                'formula': 'Max DD = (Valle - Pico) / Pico',
+                'fdetail': 'Valle: valor minimo posterior al pico   Pico: maximo historico previo',
             },
         ]
 
@@ -665,14 +667,13 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
             wrapped_m = textwrap.fill(md['desc'], width=88)
             ax_m.text(0.025, 0.54, wrapped_m, fontsize=7.8, color=DARK,
                       va='top', transform=ax_m.transAxes, linespacing=1.42)
-            # Fórmula con LaTeX (mathtext)
             ax_m.add_patch(mpatches.Rectangle(
-                (0.025, 0.0), 0.95, 0.24, transform=ax_m.transAxes,
+                (0.025, 0.0), 0.95, 0.20, transform=ax_m.transAxes,
                 facecolor=LIGHT, edgecolor='none'))
-            ax_m.text(0.50, 0.18, md['formula'], fontsize=13,
-                      color=md['color'], va='top', ha='center',
-                      transform=ax_m.transAxes)
-            ax_m.text(0.040, 0.06, md['fdetail'], fontsize=7,
+            ax_m.text(0.040, 0.17, md['formula'], fontsize=8,
+                      color=md['color'], va='top', transform=ax_m.transAxes,
+                      fontfamily='monospace', fontweight='bold')
+            ax_m.text(0.040, 0.07, md['fdetail'], fontsize=7,
                       color=MUTED, va='top', transform=ax_m.transAxes)
 
         _footer(fig)
@@ -728,8 +729,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         ax.set_ylabel('Retorno Anual (%)',     fontsize=11, color=DARK)
         ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax.legend(fontsize=9, framealpha=1.0, loc='upper left',
-                  facecolor=WHITE, edgecolor=BORDER, labelcolor=DARK)
+        ax.legend(fontsize=9, framealpha=0.96, loc='upper left',
+                  facecolor=WHITE, edgecolor=BORDER)
         ax.grid(True, alpha=0.28, color=BORDER)
         _footer(fig)
         plt.tight_layout(rect=[0, 0.04, 1, 1])
@@ -737,28 +738,17 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PAGINA 5 — COMPOSICION (donuts 2×2, portrait A4, fondo blanco)
+        # PAGINA 5 — COMPOSICION (donuts, fondo blanco)
         # ══════════════════════════════════════════════════════════════
         all_ports = list(portfolios.items())
-        port_keys = list(portfolios.keys())
-        for bs in range(0, len(all_ports), 4):
-            batch = all_ports[bs:bs + 4]
+        for bs in range(0, len(all_ports), 3):
+            batch = all_ports[bs:bs + 3]
             nb    = len(batch)
-            nrows = (nb + 1) // 2
-            ncols = min(2, nb)
-            fig, axes_d = plt.subplots(nrows, ncols, figsize=(8.27, 11.69))
+            fig, axes_d = plt.subplots(1, nb, figsize=(AW, AH))
             fig.patch.set_facecolor(WHITE)
-            # Aplanar axes siempre en lista
             if nb == 1:
                 axes_d = [axes_d]
-            elif nrows == 1:
-                axes_d = list(axes_d)
-            else:
-                axes_d = [ax for row in axes_d for ax in (row if hasattr(row, '__iter__') else [row])]
-            # Ocultar axes sobrantes si nb es impar
-            for ax_extra in axes_d[nb:]:
-                ax_extra.axis('off')
-
+            port_keys = list(portfolios.keys())
             for ax, (name, w) in zip(axes_d, batch):
                 ax.set_facecolor(WHITE)
                 mask = w > 0.005
@@ -771,35 +761,30 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                 wedges, _, atxts = ax.pie(
                     szs, labels=None, colors=cols_d,
                     autopct=lambda p: f'{p:.1f}%' if p > 3 else '',
-                    startangle=90, pctdistance=0.78,
-                    wedgeprops={'linewidth': 1.5, 'edgecolor': WHITE, 'width': 0.58},
+                    startangle=90, pctdistance=0.75,
+                    wedgeprops={'linewidth': 1.5, 'edgecolor': WHITE, 'width': 0.60},
                 )
                 for at in atxts:
-                    at.set_fontsize(9); at.set_color(DARK); at.set_fontweight('bold')
+                    at.set_fontsize(8.5); at.set_color(DARK); at.set_fontweight('bold')
                 m    = metricas[name]
                 pidx = port_keys.index(name) if name in port_keys else 0
                 c_p  = PCW[pidx % len(PCW)]
-                # Solo retorno en el centro
-                ax.text(0, 0, pct(m['Retorno Anual']),
-                        ha='center', va='center', fontsize=15,
+                ax.text(0,  0.12, pct(m['Retorno Anual']),
+                        ha='center', va='center', fontsize=13,
                         fontweight='bold', color=c_p)
-                ax.text(0, -0.20, 'Retorno anual',
-                        ha='center', va='center', fontsize=7.5, color=MUTED)
-                # Sharpe y Vol ABAJO del gráfico (fuera del donut)
-                ax.text(0.5, -0.05,
-                        f"Sharpe: {m['Sharpe Ratio']:.2f}   |   Vol: {pct(m['Volatilidad'])}",
-                        ha='center', va='top', fontsize=9, color=DARK,
-                        fontweight='bold', transform=ax.transAxes)
-                # Leyenda con texto oscuro
+                ax.text(0, -0.16, f"Sharpe: {m['Sharpe Ratio']:.2f}",
+                        ha='center', va='center', fontsize=9, color=DARK)
+                ax.text(0, -0.34, f"Vol: {pct(m['Volatilidad'])}",
+                        ha='center', va='center', fontsize=9, color=MUTED)
                 ax.legend(wedges, [f"{lb} ({s*100:.1f}%)" for lb, s in zip(lbs, szs)],
-                          loc='lower center', bbox_to_anchor=(0.5, -0.22),
-                          fontsize=9, framealpha=1.0, ncol=2,
-                          facecolor=WHITE, edgecolor=BORDER, labelcolor=DARK)
-                ax.set_title(name, fontsize=11, fontweight='bold', color=c_p, pad=12)
+                          loc='lower center', bbox_to_anchor=(0.5, -0.40),
+                          fontsize=7, framealpha=0.95, ncol=2,
+                          facecolor=WHITE, edgecolor=BORDER)
+                ax.set_title(name, fontsize=10, fontweight='bold', color=c_p, pad=10)
             fig.suptitle('Composicion de Portafolios Optimizados',
                          fontsize=13, fontweight='bold', color=DARK, y=1.01)
             _footer(fig)
-            plt.tight_layout(h_pad=4.0, w_pad=3.0)
+            plt.tight_layout()
             pdf.savefig(fig, facecolor=WHITE, bbox_inches='tight')
             plt.close(fig)
 
@@ -821,7 +806,7 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                       fontsize=12, fontweight='bold', color=DARK)
         ax1.set_ylabel('Rend. Acumulado (%)', fontsize=10, color=DARK)
         ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax1.legend(fontsize=9, framealpha=1.0, facecolor=WHITE, edgecolor=BORDER, labelcolor=DARK)
+        ax1.legend(fontsize=9, framealpha=0.96, facecolor=WHITE, edgecolor=BORDER)
         ax1.grid(True, alpha=0.28, color=BORDER)
         for i, col in enumerate(cum_assets.columns):
             ax2.plot(cum_assets.index, cum_assets[col] * 100,
@@ -833,8 +818,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
         ax2.set_ylabel('Rend. Acumulado (%)', fontsize=10, color=DARK)
         ax2.set_xlabel('Fecha', fontsize=10, color=DARK)
         ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.0f}%'))
-        ax2.legend(fontsize=9, framealpha=1.0, facecolor=WHITE, edgecolor=BORDER,
-                   labelcolor=DARK, bbox_to_anchor=(1.01, 1), loc='upper left')
+        ax2.legend(fontsize=8, framealpha=0.95, facecolor=WHITE, edgecolor=BORDER,
+                   bbox_to_anchor=(1.01, 1), loc='upper left')
         ax2.grid(True, alpha=0.28, color=BORDER)
         _footer(fig)
         plt.tight_layout(rect=[0, 0.04, 1, 1])
@@ -964,8 +949,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'clave: los activos se evaluan por su aporte al riesgo total del '
                           'portafolio, no de forma aislada. Esta teoria es la base de la '
                           'optimizacion cuantitativa moderna.'),
-                'formula': r'$\min_w \; w^\top \Sigma \, w \quad \text{s.a.} \quad w^\top\mu = \mu_{obj},\quad \sum_i w_i = 1$',
-                'fdetail': r'$w$: pesos   $\Sigma$: matriz de covarianza   $\mu$: retornos esperados',
+                'formula': 'min w\'Sw  sujeto a  w\'mu = mu_objetivo,  sum(w) = 1',
+                'fdetail': 'w: pesos   S: matriz de covarianza   mu: retornos esperados',
             },
             {
                 'title': '2. La Frontera Eficiente',
@@ -974,8 +959,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'cada nivel de riesgo, o el minimo riesgo para cada nivel de retorno. '
                           'Cualquier portafolio por debajo de la frontera es suboptimo: existe '
                           'otro con igual retorno y menor riesgo.'),
-                'formula': r'$FE = \left\{\,(\sigma_p,\,\mu_p)\;\middle|\;\forall p^\prime:\;\sigma_{p^\prime} < \sigma_p \Rightarrow \mu_{p^\prime} < \mu_p\,\right\}$',
-                'fdetail': r'$\sigma_p$: volatilidad del portafolio   $\mu_p$: retorno esperado',
+                'formula': 'FE = { (sigma_p, mu_p) | no existe p\' con mu_p\' >= mu_p y sigma_p\' < sigma_p }',
+                'fdetail': 'sigma_p: vol del portafolio   mu_p: retorno esperado del portafolio',
             },
             {
                 'title': '3. Diversificacion y Reduccion del Riesgo',
@@ -984,8 +969,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'sacrificar retorno. El "milagro" de la diversificacion: el riesgo '
                           'del portafolio puede ser menor que el promedio de riesgos individuales '
                           'si los activos no se mueven en perfecta sincronia.'),
-                'formula': r'$\sigma_p^2 = \sum_i \sum_j w_i\, w_j\, \sigma_{ij}$',
-                'fdetail': r'$\sigma_{ij}$: covarianza entre activos $i$ y $j$   $w_i, w_j$: pesos respectivos',
+                'formula': 'sigma_p^2 = sum_i sum_j wi*wj*sigma_ij',
+                'fdetail': 'sigma_ij: covarianza entre activos i y j   wi, wj: pesos respectivos',
             },
             {
                 'title': '4. Correlacion entre Activos',
@@ -994,8 +979,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'cercanos a +1: se mueven juntos (poca diversificacion). Valores '
                           'cercanos a -1: se mueven opuesto (maxima diversificacion). El objetivo '
                           'es combinar activos con baja correlacion entre si.'),
-                'formula': r'$\rho_{ij} = \dfrac{\sigma_{ij}}{\sigma_i \cdot \sigma_j}$',
-                'fdetail': r'$\rho_{ij}$: correlacion   $\sigma_{ij}$: covarianza   $\sigma_i, \sigma_j$: volatilidades individuales',
+                'formula': 'rho_ij = sigma_ij / (sigma_i * sigma_j)',
+                'fdetail': 'rho_ij: correlacion   sigma_ij: covarianza   sigma_i, sigma_j: volatilidades',
             },
             {
                 'title': '5. Ratio de Sharpe y Linea de Mercado de Capitales (CML)',
@@ -1004,8 +989,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'Sharpe. Todo inversor racional elegira un punto sobre esta linea, '
                           'combinando el activo libre de riesgo con el portafolio de mercado '
                           'segun su tolerancia al riesgo.'),
-                'formula': r'$E[R_p] = R_f + S \cdot \sigma_p$',
-                'fdetail': r'$E[R_p]$: retorno esperado   $R_f$: tasa libre de riesgo   $S$: Sharpe   $\sigma_p$: volatilidad objetivo',
+                'formula': 'E[Rp] = Rf + Sharpe * sigma_p',
+                'fdetail': 'E[Rp]: retorno esperado   Rf: tasa libre de riesgo   sigma_p: volatilidad objetivo',
             },
             {
                 'title': '6. CAGR vs. Retorno Aritmetico',
@@ -1014,8 +999,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'El CAGR mide el crecimiento real compuesto: cuanto multiplico el '
                           'capital. Para periodos largos, el CAGR siempre es menor o igual al '
                           'retorno aritmetico; la diferencia crece con la volatilidad.'),
-                'formula': r'$CAGR \approx \mu_{arit} - \dfrac{\sigma^2}{2}$',
-                'fdetail': r'$\mu_{arit}$: retorno medio aritmetico   $\sigma^2$: varianza anual del portafolio',
+                'formula': 'CAGR aprox. = mu_aritmetico - sigma^2 / 2',
+                'fdetail': 'mu: retorno medio aritmetico   sigma^2: varianza anual del portafolio',
             },
             {
                 'title': '7. Drawdown y Recuperacion',
@@ -1024,8 +1009,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'el tiempo de recuperacion: una caida del 50% requiere un rebote del '
                           '100% para volver al punto de partida. Portafolios con menor drawdown '
                           'son mas resilientes y psicologicamente mas sostenibles.'),
-                'formula': r'$R_{nec} = \dfrac{1}{1 + MaxDD} - 1$',
-                'fdetail': r'$MaxDD = -0.50$ implica necesitar $+100\%$ para recuperar el capital',
+                'formula': 'Recuperacion necesaria = 1 / (1 + MaxDD) - 1',
+                'fdetail': 'MaxDD = -0.50 implica necesitar +100% para recuperar el capital',
             },
             {
                 'title': '8. Rebalanceo Periodico',
@@ -1034,8 +1019,8 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                           'objetivo original. Rebalancear implica vender lo que subio y comprar '
                           'lo que bajo para volver a la asignacion deseada. En mercados volatiles, '
                           'el rebalanceo puede mejorar el retorno de largo plazo.'),
-                'formula': r'$w_i^{actual} = \dfrac{V_i}{\sum_j V_j} \quad\Rightarrow\quad \delta_i = w_i^{obj} - w_i^{actual}$',
-                'fdetail': r'$V_i$: valor actual del activo $i$   $\delta_i$: ajuste necesario en el peso',
+                'formula': 'w_actual_i = V_i / sum_j V_j   =>   delta_i = w_objetivo_i - w_actual_i',
+                'fdetail': 'V_i: valor actual del activo i   delta_i: ajuste necesario en el peso',
             },
         ]
 
@@ -1074,14 +1059,14 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
                 wrapped_e = textwrap.fill(card_e['text'], width=90)
                 ax_e.text(0.025, 0.72, wrapped_e, fontsize=7.8, color=DARK,
                           va='top', transform=ax_e.transAxes, linespacing=1.42)
-                # Formula box con LaTeX (mathtext)
+                # Formula box
                 ax_e.add_patch(mpatches.Rectangle(
-                    (0.025, 0.00), 0.95, 0.24, transform=ax_e.transAxes,
+                    (0.025, 0.00), 0.95, 0.22, transform=ax_e.transAxes,
                     facecolor=LIGHT, edgecolor='none'))
-                ax_e.text(0.50, 0.19, card_e['formula'], fontsize=12,
-                          color=card_e['color'], va='top', ha='center',
-                          transform=ax_e.transAxes)
-                ax_e.text(0.040, 0.07, card_e['fdetail'], fontsize=7,
+                ax_e.text(0.040, 0.195, card_e['formula'], fontsize=7.8,
+                          color=card_e['color'], va='top', transform=ax_e.transAxes,
+                          fontfamily='monospace', fontweight='bold')
+                ax_e.text(0.040, 0.085, card_e['fdetail'], fontsize=7,
                           color=MUTED, va='top', transform=ax_e.transAxes)
 
             _footer(fig)
@@ -1089,80 +1074,82 @@ def generate_pdf_report(assets, portfolios, metricas, port_daily, cum_port, cum_
             plt.close(fig)
 
         # ══════════════════════════════════════════════════════════════
-        # PAGINA 12 — DISCLAIMER (Portrait A4) — texto corrido
+        # PAGINA 12 — DISCLAIMER (Portrait A4)
         # ══════════════════════════════════════════════════════════════
         fig = plt.figure(figsize=(8.27, 11.69))
         fig.patch.set_facecolor(WHITE)
 
         # Header rojo disclaimer
-        ax_dh = fig.add_axes([0, 0.88, 1, 0.12])
-        ax_dh.set_facecolor('#c0392b')
-        ax_dh.set_xlim(0, 1); ax_dh.set_ylim(0, 1)
-        ax_dh.axis('off')
-        ax_dh.text(0.06, 0.80, 'Aviso Legal y Disclaimer', fontsize=15,
-                   fontweight='bold', color=WHITE, va='top')
-        ax_dh.text(0.06, 0.34, 'Este informe fue generado automaticamente y tiene caracter exclusivamente informativo y educativo.',
-                   fontsize=8, color='#ffcdd2', va='top')
+        ax_dh = fig.add_axes([0.06, 0.86, 0.88, 0.10])
+        _card_bg(ax_dh, LIGHT)
+        _ax_off(ax_dh, LIGHT)
+        ax_dh.add_patch(mpatches.Rectangle(
+            (0, 0), 0.007, 1, transform=ax_dh.transAxes,
+            facecolor='#c0392b', edgecolor='none'))
+        ax_dh.text(0.030, 0.74, 'Aviso Legal y Disclaimer', fontsize=14,
+                   fontweight='bold', color=DARK, va='top', transform=ax_dh.transAxes)
+        ax_dh.text(0.030, 0.28, ('Este informe fue generado automaticamente y tiene caracter '
+                                 'exclusivamente informativo y educativo.'),
+                   fontsize=8.5, color=MUTED, va='top', transform=ax_dh.transAxes)
 
-        # Texto corrido — un solo bloque de texto fluido
-        ax_disc = fig.add_axes([0.08, 0.10, 0.84, 0.76])
-        _ax_off(ax_disc, WHITE)
-
+        # Bloques de disclaimer
         DISC_ITEMS = [
-            ('No constituye asesoramiento financiero.',
+            ('No constituye asesoramiento financiero',
              'Este informe no constituye ni debe interpretarse como asesoramiento financiero, '
              'de inversion, legal, impositivo ni de ninguna otra naturaleza profesional. '
              'La informacion presentada tiene fines unicamente informativos y educativos. '
              'BDI Consultora no tiene relacion de mandato ni gestion de activos con el usuario.'),
-            ('Rendimientos pasados no garantizan resultados futuros.',
+            ('Rendimientos pasados no garantizan resultados futuros',
              'Las proyecciones, simulaciones y analisis historicos presentados no constituyen '
              'garantia de rendimiento futuro. Los mercados financieros son dinamicos y estan '
              'sujetos a factores macroeconomicos, politicos y de liquidez impredecibles '
              'que pueden afectar significativamente los resultados reales.'),
-            ('Riesgo de perdida de capital.',
+            ('Riesgo de perdida de capital',
              'Toda inversion en mercados financieros conlleva riesgos, incluyendo la posible '
              'perdida parcial o total del capital invertido. El inversor debe evaluar '
              'cuidadosamente su tolerancia al riesgo, su horizonte temporal y su situacion '
              'patrimonial antes de tomar cualquier decision de inversion.'),
-            ('Precision de los datos.',
+            ('Precision de los datos',
              'Los datos historicos utilizados provienen de fuentes publicas (Yahoo Finance u '
              'otras) y pueden contener inexactitudes, ajustes por dividendos o splits no '
              'reflejados. BDI Consultora no se responsabiliza por errores en los datos '
              'fuente ni por las consecuencias de decisiones basadas en este analisis.'),
-            ('Consulte con un asesor certificado.',
+            ('Consulte con un asesor certificado',
              'Antes de tomar cualquier decision de inversion, se recomienda consultar con '
              'un asesor financiero certificado que conozca su situacion patrimonial, fiscal '
              'y sus objetivos financieros personales. Este informe no reemplaza el '
              'asesoramiento profesional individualizado.'),
         ]
 
-        y_cur = 0.97
-        LINE_SP = 1.55
-        WRAP_W  = 88
-        for title_d, body_d in DISC_ITEMS:
-            # Título en negrita
-            ax_disc.text(0.0, y_cur, title_d, fontsize=8, fontweight='bold',
-                         color='#c0392b', va='top', transform=ax_disc.transAxes)
-            y_cur -= 0.048
-            # Cuerpo envuelto
-            wrapped_d = textwrap.fill(body_d, width=WRAP_W)
-            n_lines = wrapped_d.count('\n') + 1
-            ax_disc.text(0.0, y_cur, wrapped_d, fontsize=7.5, color=DARK,
-                         va='top', transform=ax_disc.transAxes, linespacing=LINE_SP)
-            y_cur -= n_lines * 0.052 + 0.032
+        D_START = 0.85
+        D_H     = 0.130
+        D_GAP   = 0.018
+
+        for idx_d, (title_d, body_d) in enumerate(DISC_ITEMS):
+            cy_d = D_START - (idx_d + 1) * D_H - idx_d * D_GAP
+            ax_di = fig.add_axes([0.06, cy_d, 0.88, D_H])
+            _card_bg(ax_di, '#FAFAFA')
+            _ax_off(ax_di, '#FAFAFA')
+            _left_border(ax_di, '#c0392b', 0.010)
+
+            ax_di.text(0.025, 0.90, title_d, fontsize=8.5, fontweight='bold',
+                       color=DARK, va='top', transform=ax_di.transAxes)
+            wrapped_d = textwrap.fill(body_d, width=90)
+            ax_di.text(0.025, 0.68, wrapped_d, fontsize=7.5, color=MUTED,
+                       va='top', transform=ax_di.transAxes, linespacing=1.42)
 
         # BDI contact block
-        ax_bdi = fig.add_axes([0.06, 0.03, 0.88, 0.08])
+        ax_bdi = fig.add_axes([0.06, 0.04, 0.88, 0.14])
         ax_bdi.set_facecolor(BDI_GREEN)
         ax_bdi.set_xlim(0, 1); ax_bdi.set_ylim(0, 1)
         ax_bdi.axis('off')
-        ax_bdi.text(0.05, 0.82, 'BDI Consultora de Inversiones',
-                    fontsize=11, fontweight='bold', color=WHITE, va='top',
+        ax_bdi.text(0.05, 0.80, 'BDI Consultora de Inversiones',
+                    fontsize=13, fontweight='bold', color=WHITE, va='top',
                     transform=ax_bdi.transAxes)
-        ax_bdi.text(0.05, 0.44, 'hola@bdiconsultora.com',
-                    fontsize=9, color=BDI_LIME, va='top', transform=ax_bdi.transAxes)
-        ax_bdi.text(0.05, 0.12, f'Informe generado el {fecha_hoy}  —  BDI Optimizador de Carteras v2.0',
-                    fontsize=7, color=WHITE, alpha=0.80, va='top',
+        ax_bdi.text(0.05, 0.50, 'hola@bdiconsultora.com',
+                    fontsize=10, color=BDI_LIME, va='top', transform=ax_bdi.transAxes)
+        ax_bdi.text(0.05, 0.22, f'Informe generado el {fecha_hoy}  —  BDI Optimizador de Carteras v2.0',
+                    fontsize=7.5, color=WHITE, alpha=0.80, va='top',
                     transform=ax_bdi.transAxes)
 
         _footer(fig)
@@ -1413,11 +1400,11 @@ if run_button:
     constraints_base = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1},)
     w0               = np.full(num_assets, 1.0 / num_assets)
 
-    def _ps(v):
+    def _ps(w):
         return port_stats(w, mean_returns, cov_matrix, rf)
 
-    def neg_sharpe(w): return -_ps(w)Z[2]
-    def min_vol_fn(w): return  _ps(w)Z[1]
+    def neg_sharpe(w): return -_ps(w)[2]
+    def min_vol_fn(w): return  _ps(w)[1]
 
     # ── Optimizaciones ─────────────────────────────────────────────────
     with st.spinner("🔢 Ejecutando optimizaciones (Sharpe, Min-Vol, Equiponderado)..."):
@@ -1462,7 +1449,7 @@ if run_button:
         vol_fe = np.array(vol_fe)
 
     # ── Simulación Monte Carlo ─────────────────────────────────────────
-    with st.spinner"🎲 Simulando 50 000 portafolios aleatorios..."):
+    with st.spinner("🎲 Simulando 50 000 portafolios aleatorios..."):
         N_SIM = 50_000
         sim_ret_arr, sim_vol_arr, sim_sharpe_arr = [], [], []
         for _ in range(N_SIM):
@@ -1498,7 +1485,7 @@ if run_button:
                 ret_custom, vol_custom, sharpe_custom = _ps(w_custom)
                 sin_peso = [a for a in assets if a not in avail]
                 if sin_peso:
-                    st.info(fℹ️ Activos sin peso especificado asignados a 0%: {', '.join(sin_peso)}")
+                    st.info(f"ℹ️ Activos sin peso especificado asignados a 0%: {', '.join(sin_peso)}")
             else:
                 st.warning("⚠️ Los pesos indicados suman 0. Se omite la cartera personalizada.")
         else:
@@ -1543,7 +1530,7 @@ if run_button:
     st.session_state['results_ready'] = True
 
 # ─────────────────────────────────────────────────────────────────────
-#  SECCIÓN DE RESULTADS  (persiste entre reruns — fuera del if run_button)
+#  SECCIÓN DE RESULTADOS  (persiste entre reruns — fuera del if run_button)
 # ─────────────────────────────────────────────────────────────────────
 if st.session_state.get('results_ready') and '_an' in st.session_state:
     _an            = st.session_state['_an']
@@ -1612,7 +1599,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
     tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
         "🌐 Espacio Markowitz",
         "🥧 Composición",
-        "📈 Portfolios",
+        "📈 PortFolios",
         "📈 Activos",
         "📊 Métricas",
         "🔥 Correlación",
@@ -2059,7 +2046,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
             st.markdown("""
             **Frontera Eficiente:** Conjunto de portfolios que maximizan el retorno esperado
             para cada nivel de riesgo. Todo portfolio *debajo* o *a la derecha* de la frontera es subóptimo
-            — existe un portfolio mejor con el mismo riesgo o menor riesgo con igual retorno.
+            — existe un portfolio mejor con el mismo riesgo o menos riesgo con igual retorno.
 
             **Problema de optimización (mínima volatilidad para retorno objetivo $R^*$):**
             """)
@@ -2166,8 +2153,8 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 st.markdown("""
                 <div class="info-box">
                     <strong style="color:#ef5350;">🔴 Perfil Conservador</strong><br/><br/>
-                    Elegí el <strong>PortFolio de Mínima Volatilidad</strong>.<br/><br/>
-                    Menos riesgo de caídas · Menor Drawdown histórico · Sacrifica algo de retorno ·
+                    Elegí el <strong>Portfolio de Mínima Volatilidad</strong>.<br/><br/>
+                    Menor riesgo de caídas · Menor Drawdown histórico · Sacrifica algo de retorno ·
                     Ideal para horizontes cortos o alta aversión al riesgo.
                 </div>
                 """, unsafe_allow_html=True)
@@ -2191,7 +2178,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                 """, unsafe_allow_html=True)
             st.markdown("""
             <div class="legal-warning" style="margin-top:1rem;">
-                ⚠️ <strong>Limitación del modelo:</strong> Markowitz se basa en retornos históricos y
+                ⚠️ <strong>Limitación del modelo;</strong> Markowitz se basa en retornos históricos y
                 asume que las correlaciones son estables. En períodos de crisis, las correlaciones
                 aumentan (los activos "caen juntos"), reduciendo el beneficio de la diversificación
                 exactamente cuando más se necesita. Usá estos resultados como guía, no como verdad absoluta.
@@ -2250,7 +2237,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
                     obj_label=obj_label, has_custom_weights=has_custom_weights,
                     vol_custom=vol_custom, ret_custom=ret_custom,
                     cliente_nombre=cliente_nombre,
-    ;           )
+                )
                 st.session_state['pdf_bytes'] = pdf_bytes
                 st.session_state['pdf_ready'] = True
 
