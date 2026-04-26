@@ -1402,7 +1402,7 @@ if st.session_state.get('results_ready') and '_an' in st.session_state:
         for ax, (col, ylabel, higher_better) in zip(axes.flatten(), metricas_plot):
             vals  = [metricas[p][col] for p in port_names]
             scale = 100 if '%' in ylabel else 1
-            bars  = ax.bar(port_names, [v * scale for o in vals],
+            bars  = ax.bar(port_names, [v * scale for v in vals],
                            color=PORT_COLORS[:len(port_names)],
                            edgecolor=BDI_DARK_BG, linewidth=1.2, width=0.5)
             best_idx = np.argmax(vals) if higher_better else np.argmin(vals)
