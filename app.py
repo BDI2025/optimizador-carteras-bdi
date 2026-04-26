@@ -1,4 +1,4 @@
-# ============================================================
+# ============================================================ 
 #  OPTIMIZADOR DE CARTERA PROFESIONAL — STREAMLIT
 #  BDI Consultora de Inversiones
 #  Versión 2.0 — Modelo de Markowitz con Frontera Eficiente
